@@ -2,6 +2,7 @@ import streamlit as st
 from st_aggrid import AgGrid
 
 import pandas as pd
+from decimal import Decimal, ROUND_HALF_UP
 
 # Load data and cache
 @st.cache()  # use Streamlit cache decorator to cache this operation so data doesn't have to be read in everytime script is re-run
@@ -63,3 +64,29 @@ def get_sidebar(data):
 
 def write_table(data):
     return AgGrid(data)
+
+
+def excel_round(number, precision=0.01) -> float:
+    """
+    Rounds a number to a specified precision using the "round half up" method, similar to Excel.
+
+    Parameters:
+    number (float/int): The number to be rounded.
+    precision (float/int): The precision to round to (e.g., 0.1, 0.01, 100, etc.).
+
+    Returns:
+    float: The rounded number, or the original value if it's not numeric.
+    """
+    try:
+        if isinstance(number, (int, float)):  # Ensure the number is numeric
+            if precision > 1:  # For rounding to nearest ten, hundreds, etc.
+                rounded_num = round(number / precision) * precision
+            else:  # For decimal precision
+                number = Decimal(str(number))
+                precision = Decimal(str(precision))
+                rounded_num = number.quantize(precision, rounding=ROUND_HALF_UP)
+            return float(rounded_num)
+        else:
+            return number  # Return the value unchanged if it's not numeric
+    except (ValueError, InvalidOperation):
+        return number  # Return the value unchanged if there's an error during conversion

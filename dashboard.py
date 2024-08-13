@@ -80,7 +80,7 @@ def aggregate(data, query, name, on, aggregations):
     if on not in df.columns:
         df.insert(loc=0, column=on, value=name)
     df_group = df.groupby(on).agg(aggregations)
-    df_group = df_group.round(0).astype(int)
+    df_group = df_group.applymap(lambda x: utils.excel_round(x, 1)).astype(int)
     return df, df_group
 
 
@@ -115,8 +115,10 @@ def convert_df(df):
 
 #Metric calcs. 
 def metric_calcs(group_need_indices, metric_index):
-    place_metric = round(group_need_indices[metric_index][0].astype(float), 2)
-    icb_metric = round(place_metric - 1, 2)
+    # Convert the value to float and round it using excel_round to 2 decimal places
+    place_metric = utils.excel_round(group_need_indices[metric_index][0].astype(float), 0.01)
+    # Subtract 1 and then round again using excel_round to 2 decimal places
+    icb_metric = utils.excel_round(place_metric - 1, 0.01)
     return place_metric, icb_metric
 
 
@@ -467,7 +469,7 @@ for obj in dict_obj:
 # flaten list for concatination
 flat_list = [item for sublist in df_list for item in sublist]
 large_df = pd.concat(flat_list, ignore_index=True)
-large_df = large_df.round(decimals=3)
+large_df = large_df.applymap(lambda x: utils.excel_round(x, 0.001))
 
 # "Weighted G&A pop",
 # "Weighted Community pop",
