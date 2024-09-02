@@ -614,24 +614,51 @@ if print_table:
         utils.write_table(large_df)
 
 # csv_header = b'WARNING: this is a warning message'
+# CSV Header content
+csv_header1 = "PLEASE READ: Below you can find the results for the places you created, and for the ICB they belong to, for the year you selected."
+csv_header2 = "Note that the need indices for the places are relative to the ICB (where the ICBs need index = 1.00), while the need index for the ICB is relative to national need (where the national need index = 1.00)."
+csv_header3 = "This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the user guide available from https://www.england.nhs.uk/allocations/."
+csv_header4 = ""
 
+# Function to write headers to a sheets
+# move to utils i think
+def write_headers(sheet, *csv_headers):
+    # Loop through the csv_headers and write each header to the sheet
+    for index, header in enumerate(csv_headers):
+        sheet.write(index, 0, header)
+    
+    # Add a line below the headers
+    header_row_count = len(csv_headers)
+    sheet.write(header_row_count, 0, "-"*50)  # Adjust line length if needed
+    
+    return header_row_count + 1  # Return the starting row for data
 
 # Create a BytesIO buffer for the Excel file
 excel_buffer = io.BytesIO()
-
 # Create a Pandas Excel writer using the XlsxWriter engine
 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+
     # Write the first DataFrame to the first sheet
-    large_df.to_excel(writer, sheet_name='Main Data', index=False)
+    worksheet = writer.book.add_worksheet('Main Data')
+    start_row = write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
+    
+    # Write the DataFrame data starting from the row below the line
+    for r, row in enumerate(large_df.values, start=start_row):
+        worksheet.write_row(r, 0, row)
     
     # Create another DataFrame for the second sheet (example data)
     another_df = pd.DataFrame({
         "Column1": [1, 2, 3],
-        "Column2": ["A", "B", "C"]
+        "Column2": ["AB", "B", "C"]
     })
     
     # Write the second DataFrame to another sheet
-    another_df.to_excel(writer, sheet_name='Additional Data', index=False)
+    worksheet = writer.book.add_worksheet('Additional Data')
+    start_row = write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
+    
+    # Write the DataFrame data starting from the row below the line
+    for r, row in enumerate(another_df.values, start=start_row):
+        worksheet.write_row(r, 0, row)
     
     # Save the Excel file
     writer.save()
@@ -639,14 +666,8 @@ with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
 # Move the pointer of the buffer to the beginning
 excel_buffer.seek(0)
 
-# CSV Header content
-csv_header1 = b"\"PLEASE READ: Below you can find the results for the places you created, and for the ICB they belong to, for the year you selected.\""
-csv_header2 = b"\"Note that the need indices for the places are relative to the ICB (where the ICBs need index = 1.00), while the need index for the ICB is relative to national need (where the national need index = 1.00).\""
-csv_header3 = b"\"This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the user guide available from https://www.england.nhs.uk/allocations/.\""
-csv_header4 = b"\"\""
 
-# Example to combine with existing data (if required)
-# full_csv = b'\n'.join([csv_header1, csv_header2, csv_header3, csv_header4,  wf])
+
 
 # Open the text documentation file
 with open("docs/ICB allocation tool documentation.txt", "rb") as fh:
