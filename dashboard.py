@@ -606,7 +606,7 @@ with st.expander("Primary Medical Care Sub Indices", expanded  = True):
 # -------------------------------------------------------------------------
 current_date = datetime.now().strftime("%Y-%m-%d")
 
-st.subheader("Download Data")
+st.subheader("Download Data!")
 
 print_table = st.checkbox("Preview data download", value=True)
 if print_table:
@@ -616,43 +616,67 @@ if print_table:
 # csv_header = b'WARNING: this is a warning message'
 
 
+# Create a BytesIO buffer for the Excel file
+excel_buffer = io.BytesIO()
+
+# Create a Pandas Excel writer using the XlsxWriter engine
+with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+    # Write the first DataFrame to the first sheet
+    large_df.to_excel(writer, sheet_name='Main Data', index=False)
+    
+    # Create another DataFrame for the second sheet (example data)
+    another_df = pd.DataFrame({
+        "Column1": [1, 2, 3],
+        "Column2": ["A", "B", "C"]
+    })
+    
+    # Write the second DataFrame to another sheet
+    another_df.to_excel(writer, sheet_name='Additional Data', index=False)
+    
+    # Save the Excel file
+    writer.save()
+
+# Move the pointer of the buffer to the beginning
+excel_buffer.seek(0)
+
+# CSV Header content
 csv_header1 = b"\"PLEASE READ: Below you can find the results for the places you created, and for the ICB they belong to, for the year you selected.\""
 csv_header2 = b"\"Note that the need indices for the places are relative to the ICB (where the ICBs need index = 1.00), while the need index for the ICB is relative to national need (where the national need index = 1.00).\""
 csv_header3 = b"\"This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the user guide available from https://www.england.nhs.uk/allocations/.\""
 csv_header4 = b"\"\""
 
-wf = convert_df(large_df)
+# Example to combine with existing data (if required)
+# full_csv = b'\n'.join([csv_header1, csv_header2, csv_header3, csv_header4,  wf])
 
-full_csv = b'\n'.join([csv_header1, csv_header2, csv_header3, csv_header4,  wf])
-
+# Open the text documentation file
 with open("docs/ICB allocation tool documentation.txt", "rb") as fh:
     readme_text = io.BytesIO(fh.read())
 
+# Create JSON dump of the session state (example)
 session_state_dict = dict.fromkeys(st.session_state.places, [])
 for key, value in session_state_dict.items():
     session_state_dict[key] = st.session_state[key]
 session_state_dict["places"] = st.session_state.places
 session_state_dump = json.dumps(session_state_dict, indent=4, sort_keys=False)
 
-# https://stackoverflow.com/a/44946732
+# Create a ZIP file containing the Excel file, documentation, and configuration
 zip_buffer = io.BytesIO()
 with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
-    for file_name, data in [
-        (f"ICB allocation calculations {selected_dataset}", io.BytesIO(full_csv)),
-        ("ICB allocation tool documentation.txt", readme_text),
-        (
-            "ICB allocation tool configuration file.json",
-            io.StringIO(session_state_dump),
-        ),
-    ]:
-        zip_file.writestr(file_name, data.getvalue())
+    zip_file.writestr(f"ICB allocation calculations {selected_dataset}.xlsx", excel_buffer.getvalue())
+    zip_file.writestr("ICB allocation tool documentation.txt", readme_text.getvalue())
+    zip_file.writestr("ICB allocation tool configuration file.json", session_state_dump)
 
+# Ensure the ZIP file buffer's pointer is at the start
+zip_buffer.seek(0)
+
+# Streamlit download button
 btn = st.download_button(
     label="Download ZIP",
     data=zip_buffer.getvalue(),
-    file_name="ICB allocation tool %s.zip" % current_date,
+    file_name=f"ICB allocation tool {current_date}.zip",
     mime="application/zip",
 )
+
 
 st.subheader("Help and Support")
 with st.expander("About the ICB Place Based Allocation Tool"):
