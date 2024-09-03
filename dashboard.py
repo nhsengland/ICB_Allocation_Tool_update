@@ -641,7 +641,7 @@ excel_buffer = io.BytesIO()
 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
 
     # Write the first DataFrame to the first sheet
-    worksheet = writer.book.add_worksheet('allocation {selected_year}')
+    worksheet = writer.book.add_worksheet(f'Allocations for {selected_year}')
     start_row = write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
     
     # Write the DataFrame data starting from the row below the line
@@ -649,7 +649,7 @@ with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
         worksheet.write_row(r, 0, row)
     
     for year, df in other_years.items():
-        worksheet_name = f"Allocation {year}"
+        worksheet_name = f"Allocations for {year}"
         worksheet = writer.book.add_worksheet(worksheet_name)
         start_row = write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
 
