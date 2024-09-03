@@ -178,6 +178,7 @@ st.markdown("Last Updated 17th January 2023")
 datasets = os.listdir('data/')
 
 selected_dataset = st.sidebar.selectbox("Time Period:", options = datasets, help="Select a time period", format_func=lambda x : x.replace('.csv','').replace('_','/'))
+selected_year = selected_dataset.replace('.csv', '')
 
 # Import Data
 # -------------------------------------------------------------------------
@@ -530,7 +531,8 @@ large_df = large_df.round(decimals=3)
 
 # Metrics
 # -------------------------------------------------------------------------
-
+session_state = st.session_state
+other_years = utils.get_data_for_other_year(selected_dataset, session_state) #this is getting the other data
 df = large_df.loc[large_df["Place / ICB"] == st.session_state.after]
 df = df.reset_index(drop=True)
 
@@ -606,7 +608,7 @@ with st.expander("Primary Medical Care Sub Indices", expanded  = True):
 # -------------------------------------------------------------------------
 current_date = datetime.now().strftime("%Y-%m-%d")
 
-st.subheader("Download Data!")
+st.subheader("Download Data")
 
 print_table = st.checkbox("Preview data download", value=True)
 if print_table:
@@ -639,27 +641,20 @@ excel_buffer = io.BytesIO()
 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
 
     # Write the first DataFrame to the first sheet
-    worksheet = writer.book.add_worksheet('Main Data')
+    worksheet = writer.book.add_worksheet('allocation {selected_year}')
     start_row = write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
     
     # Write the DataFrame data starting from the row below the line
     for r, row in enumerate(large_df.values, start=start_row):
         worksheet.write_row(r, 0, row)
     
-    # Create another DataFrame for the second sheet (example data)
-    another_df = pd.DataFrame({
-        "Column1": [1, 2, 3],
-        "Column2": ["AB", "B", "C"]
-    })
-    
-    # Write the second DataFrame to another sheet
-    worksheet = writer.book.add_worksheet('Additional Data')
-    start_row = write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
-    
-    # Write the DataFrame data starting from the row below the line
-    for r, row in enumerate(another_df.values, start=start_row):
-        worksheet.write_row(r, 0, row)
-    
+    for year, df in other_years.items():
+        worksheet_name = f"Allocation {year}"
+        worksheet = writer.book.add_worksheet(worksheet_name)
+        start_row = write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
+
+        for r, row in enumerate(df.values, start=start_row):
+            worksheet.write_row(r,0,row)
     # Save the Excel file
     writer.save()
 
