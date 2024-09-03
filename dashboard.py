@@ -71,33 +71,6 @@ if "places" not in st.session_state:
 
 # Functions & Calls
 # -------------------------------------------------------------------------
-# aggregate on a query and set of aggregations
-#Name is the name of the place in the session state, 'aggregations' tells it how to sum each column, 'on' is what to group it by. Not sure what the not in bit is doing. 
-#Query filters to make sure that GP Display (which is the gp name and code joined together by utils) is in the session state place list
-# Function outputs filtered data and grouped, filtered data separately
-def aggregate(data, query, name, on, aggregations):
-    df = data.query(query)
-    if on not in df.columns:
-        df.insert(loc=0, column=on, value=name)
-    df_group = df.groupby(on).agg(aggregations)
-    df_group = df_group.round(0).astype(int)
-    return df, df_group
-
-
-#Calculate index of weighted populations. Take the groupby output fromn the aggregator and divides it by the population number. Do it by icb and place. 
-#get_index(place_groupby, icb_groupby, index_names, index_numerator)
-#place index is divided by icb index to get a relative number
-#overall index is final_wp / gp pop
-def get_index(place_indices, icb_indices, index_names, index_numerator):
-    icb_indices[index_names] = icb_indices[index_numerator].div(
-        icb_indices["GP pop"].values, axis=0
-    )
-    place_indices[index_names] = (
-        place_indices[index_numerator]
-        .div(place_indices["GP pop"].values, axis=0)
-        .div(icb_indices[index_names].values, axis=0)
-    )
-    return place_indices, icb_indices
 
 
 # render svg image
@@ -180,14 +153,18 @@ datasets = os.listdir('data/')
 selected_dataset = st.sidebar.selectbox("Time Period:", options = datasets, help="Select a time period", format_func=lambda x : x.replace('.csv','').replace('_','/'))
 selected_year = selected_dataset.replace('.csv', '')
 
+
 # Import Data
 # -------------------------------------------------------------------------
-data_loaded = utils.get_data('data/' + selected_dataset)
 
-data = data_loaded.copy()
+dataset_dict = {}
 
+# Loads in all datasets, regardless of how many there are
+for dataset in datasets:
+    year = dataset.replace('.csv', '')
+    dataset_dict[year] = utils.get_data('data/' + dataset)
 
-icb = utils.get_sidebar(data)
+icb = utils.get_sidebar(dataset_dict[selected_year])
 
 
 # SIDEBAR Main
@@ -196,18 +173,18 @@ st.sidebar.subheader("Create New Place")
 
 icb_choice = st.sidebar.selectbox("ICB Filter:", icb, help="Select an ICB")
 
-lad = data["LA District name"].loc[data["ICB name"] == icb_choice].unique().tolist()
+lad = dataset_dict[selected_year]["LA District name"].loc[dataset_dict[selected_year]["ICB name"] == icb_choice].unique().tolist()
 
 lad_choice = st.sidebar.multiselect(
     "Local Authority District Filter:", lad, help="Select a Local Authority District"
 )
 if lad_choice == []:
     practices = (
-        data["practice_display"].loc[data["ICB name"] == icb_choice].unique().tolist()
+        dataset_dict[selected_year]["practice_display"].loc[dataset_dict[selected_year]["ICB name"] == icb_choice].unique().tolist()
     )
 else:
     practices = (
-        data["practice_display"].loc[(data["LA District name"].isin(lad_choice)) & (data["ICB name"] == icb_choice)].tolist()
+        dataset_dict[selected_year]["practice_display"].loc[(dataset_dict[selected_year]["LA District name"].isin(lad_choice)) & (dataset_dict[selected_year]["ICB name"] == icb_choice)].tolist()
     )
 
 container_one = st.sidebar.container()
@@ -389,11 +366,11 @@ lat = []
 long = []
 
 for gp in group_gp_list:
-    if ~data["practice_display"].str.contains(gp).any():
+    if ~dataset_dict[selected_year]["practice_display"].str.contains(gp).any():
         st.write(f"{gp} is not available in this time period")
         continue
-    latitude = data["Latitude"].loc[data["practice_display"] == gp].item()
-    longitude = data["Longitude"].loc[data["practice_display"] == gp].item()
+    latitude = dataset_dict[selected_year]["Latitude"].loc[dataset_dict[selected_year]["practice_display"] == gp].item()
+    longitude = dataset_dict[selected_year]["Longitude"].loc[dataset_dict[selected_year]["practice_display"] == gp].item()
     lat.append(latitude)
     long.append(longitude)
     folium.Marker(
@@ -424,51 +401,6 @@ st.info("**Selected GP Practices: **" + list_of_gps)
 
 gp_query = "practice_display == @place_state"
 icb_query = "`ICB name` == @icb_state"  # escape column names with backticks https://stackoverflow.com/a/56157729
-
-# dict to store all dfs sorted by ICB
-dict_obj = {}
-df_list = []
-
-
-
-#FOR EACH PLACE in the SESSION STATE aggregate the data at the ICB and Place level, calculate indices 
-#adds them to a dictionary object
-
-for place in st.session_state.places:
-    place_state = st.session_state[place]["gps"]
-    icb_state = st.session_state[place]["icb"]
-        
-        # get place aggregations
-    place_data, place_groupby = aggregate(
-        data, gp_query, place, "Place Name", aggregations
-    )
-    # get ICB aggregations
-    icb_data, icb_groupby = aggregate(
-        data, icb_query, icb_state, "ICB name", aggregations
-    )
-
-
-    # index calcs
-    place_indices, icb_indices = get_index(
-        place_groupby, icb_groupby, index_names, index_numerator
-    )
-
-    icb_indices.insert(loc=0, column="Place / ICB", value=icb_state)
-    place_indices.insert(loc=0, column="Place / ICB", value=place)
-
-    if icb_state not in dict_obj:
-        dict_obj[icb_state] = [icb_indices, place_indices]
-    else:
-        dict_obj[icb_state].append(place_indices)
-
-# add dict values to list
-for obj in dict_obj:
-    df_list.append(dict_obj[obj])
-
-# flaten list for concatination
-flat_list = [item for sublist in df_list for item in sublist]
-large_df = pd.concat(flat_list, ignore_index=True)
-large_df = large_df.round(decimals=3)
 
 # "Weighted G&A pop",
 # "Weighted Community pop",
@@ -532,8 +464,8 @@ large_df = large_df.round(decimals=3)
 # Metrics
 # -------------------------------------------------------------------------
 session_state = st.session_state
-other_years = utils.get_data_for_other_year(selected_dataset, session_state) #this is getting the other data
-df = large_df.loc[large_df["Place / ICB"] == st.session_state.after]
+data_all_years = utils.get_data_for_all_years(dataset_dict, session_state, aggregations, index_numerator, index_names, gp_query, icb_query) #this is getting the other data
+df = data_all_years[selected_year].loc[data_all_years[selected_year]["Place / ICB"] == st.session_state.after]
 df = df.reset_index(drop=True)
 
 #Core Index
@@ -613,7 +545,7 @@ st.subheader("Download Data")
 print_table = st.checkbox("Preview data download", value=True)
 if print_table:
     with st.container():
-        utils.write_table(large_df)
+        utils.write_table(data_all_years[selected_year])
 
 # csv_header = b'WARNING: this is a warning message'
 # CSV Header content
@@ -622,36 +554,16 @@ csv_header2 = "Note that the need indices for the places are relative to the ICB
 csv_header3 = "This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the user guide available from https://www.england.nhs.uk/allocations/."
 csv_header4 = ""
 
-# Function to write headers to a sheets
-# move to utils i think
-def write_headers(sheet, *csv_headers):
-    # Loop through the csv_headers and write each header to the sheet
-    for index, header in enumerate(csv_headers):
-        sheet.write(index, 0, header)
-    
-    # Add a line below the headers
-    header_row_count = len(csv_headers)
-    sheet.write(header_row_count, 0, "-"*50)  # Adjust line length if needed
-    
-    return header_row_count + 1  # Return the starting row for data
 
 # Create a BytesIO buffer for the Excel file
 excel_buffer = io.BytesIO()
 # Create a Pandas Excel writer using the XlsxWriter engine
 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-
-    # Write the first DataFrame to the first sheet
-    worksheet = writer.book.add_worksheet(f'Allocations for {selected_year}')
-    start_row = write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
     
-    # Write the DataFrame data starting from the row below the line
-    for r, row in enumerate(large_df.values, start=start_row):
-        worksheet.write_row(r, 0, row)
-    
-    for year, df in other_years.items():
-        worksheet_name = f"Allocations for {year}"
-        worksheet = writer.book.add_worksheet(worksheet_name)
-        start_row = write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
+    for year, df in data_all_years.items():
+        worksheet_name = f"Allocations for {year}" #Got to be less than 32 characters
+        worksheet = writer.book.add_worksheet(worksheet_name.replace("/", "_")) #Excel doesn't like the slashes
+        start_row = utils.write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
 
         for r, row in enumerate(df.values, start=start_row):
             worksheet.write_row(r,0,row)
@@ -678,7 +590,7 @@ session_state_dump = json.dumps(session_state_dict, indent=4, sort_keys=False)
 # Create a ZIP file containing the Excel file, documentation, and configuration
 zip_buffer = io.BytesIO()
 with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
-    zip_file.writestr(f"ICB allocation calculations {selected_dataset}.xlsx", excel_buffer.getvalue())
+    zip_file.writestr(f"ICB allocation calculations {selected_year}.xlsx", excel_buffer.getvalue())
     zip_file.writestr("ICB allocation tool documentation.txt", readme_text.getvalue())
     zip_file.writestr("ICB allocation tool configuration file.json", session_state_dump)
 
