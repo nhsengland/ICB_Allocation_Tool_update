@@ -463,8 +463,7 @@ icb_query = "`ICB name` == @icb_state"  # escape column names with backticks htt
 
 # Metrics
 # -------------------------------------------------------------------------
-session_state = st.session_state
-data_all_years = utils.get_data_for_all_years(dataset_dict, session_state, aggregations, index_numerator, index_names, gp_query, icb_query) #this is getting the other data
+data_all_years = utils.get_data_for_all_years(dataset_dict, st.session_state, aggregations, index_numerator, index_names, gp_query, icb_query) #this is getting the other data
 df = data_all_years[selected_year].loc[data_all_years[selected_year]["Place / ICB"] == st.session_state.after]
 df = df.reset_index(drop=True)
 
