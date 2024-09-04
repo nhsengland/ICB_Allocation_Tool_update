@@ -564,7 +564,9 @@ with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
         worksheet = writer.book.add_worksheet(worksheet_name.replace("/", "_")) #Excel doesn't like the slashes
         start_row = utils.write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
 
-        for r, row in enumerate(df.values, start=start_row):
+        # Write the DataFrame column names
+        worksheet.write_row(start_row, 0, df.columns)
+        for r, row in enumerate(df.values, start=start_row+1):
             worksheet.write_row(r,0,row)
     # Save the Excel file
     writer.save()
