@@ -95,7 +95,7 @@ def aggregate(df, name, on, aggregations):
     if on not in df.columns:
         df.insert(loc=0, column=on, value=name)
     df_group = df.groupby(on).agg(aggregations)
-    df_group = df_group.round(0).astype(int)
+    df_group = df_group.applymap(lambda x: excel_round(x, 1)).astype(int)
     return df, df_group
 
 #Calculate index of weighted populations. Take the groupby output fromn the aggregator and divides it by the population number. Do it by icb and place. 
@@ -201,7 +201,7 @@ def get_data_for_all_years(dataset_dict, session_state, aggregations, index_nume
         # flaten list for concatination
         flat_list = [item for sublist in df_list for item in sublist]
         large_df = pd.concat(flat_list, ignore_index=True)
-        large_df = large_df.round(decimals=3)
+        large_df = large_df.applymap(lambda x: excel_round(x, 0.001))
         dataset_dict[filename] = large_df
 
     return dataset_dict
