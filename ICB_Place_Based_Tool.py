@@ -5,7 +5,7 @@
 # -------------------------------------------------------------------------
 
 """
-FILE:           dashboard.py
+FILE:           ICB_Place_Based_Tool.py
 DESCRIPTION:    Streamlit weighted capitation tool
 CONTRIBUTORS:   Craig Shenton, Jonathan Pearson, Mattia Ficarelli   
 CONTACT:        england.revenue-allocations@nhs.net

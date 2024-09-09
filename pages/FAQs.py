@@ -1,5 +1,10 @@
 import streamlit as st
 import base64
+from pathlib import Path
+import time
+import toml
+
+config = toml.load('config.toml')
 
 st.set_page_config(
     page_title="ICB Place Based Allocation Tool FAQs",
@@ -31,8 +36,14 @@ svg = """
 """
 render_svg(svg)
 
-st.title("ICB Place Based Allocation Tool YEAR FAQs")
-st.markdown("Last Updated DATE")
+st.title("ICB Place Based Allocation Tool " + config['allocations_year'] + " FAQs")
+
+#Code below uses the date of last modification for the file to create a last updated date.
+script_path = Path(__file__)
+last_modified_time = script_path.stat().st_mtime
+last_modified_date = time.localtime(last_modified_time)
+formatted_date = time.strftime('%d %B %Y', last_modified_date)
+st.write(f"Last updated: {formatted_date}")
 
 with st.expander("What does the tool do?"):
     st.markdown("""This tool was built to provide Integrated Care Boards (ICBs) insight into the local-level data underlying their ICB-level resource allocation. It uses recently 
@@ -162,7 +173,7 @@ with st.expander("How do I save and return to my session?"):
 with st.expander("Further information"):
     st.markdown("""
     Further information in support of the tool can be found in the NHS England GitHub repository docs folder: 
-    \n\nhttps://github.com/nhsx/AIF_Allocation_Tool 
+    \n\n REPOSITORY LINK HERE
     \n\nThis includes this user guide and a readme file with other useful information regarding this tool 
-    \n\nhttps://github.com/nhsx/AIF_Allocation_Tool#readme
+    \n\nREADME LINK HERE
     """)
