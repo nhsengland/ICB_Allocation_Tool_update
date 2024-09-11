@@ -65,6 +65,7 @@ if len(st.session_state) < 1:
             "B85026: Kirkburton Health Centre",
         ],
         "icb": "NHS West Yorkshire ICB",
+        "year": "2023_2024"
     }
 if "places" not in st.session_state:
     st.session_state.places = ["Default Place"]
@@ -82,7 +83,7 @@ def render_svg(svg):
 
 
 # Download functionality
-@st.cache
+@st.cache_data
 def convert_df(df):
     return df.to_csv(index=False).encode("utf-8")
 
@@ -173,12 +174,29 @@ st.sidebar.subheader("Create New Place")
 
 icb_choice = st.sidebar.selectbox("ICB Filter:", icb, help="Select an ICB")
 
-lad = dataset_dict[selected_year]["LA District name"].loc[dataset_dict[selected_year]["ICB name"] == icb_choice].unique().tolist()
+# Generate the list of LADs
+lad = dataset_dict[selected_year]["LA District name"].loc[
+    dataset_dict[selected_year]["ICB name"] == icb_choice
+].unique().tolist()
 
-lad_choice = st.sidebar.multiselect(
-    "Local Authority District Filter:", lad, help="Select a Local Authority District"
-)
-if lad_choice == []:
+# Create a DataFrame for the LADs with a 'tick' column
+lad_list_to_select = pd.DataFrame(lad, columns=['LAD'])
+lad_list_to_select['tick'] = False
+lad_choice = []
+
+# Use st.expander to maintain state
+with st.sidebar.expander('Local Authority District Filter', expanded=False):
+    lad_choice = st.data_editor(
+        lad_list_to_select,
+        column_config={
+            "tick": st.column_config.CheckboxColumn("Select", default=False)
+        },
+        hide_index=True
+    )
+    
+    selected_lads = lad_choice[lad_choice['tick']].LAD.tolist()
+
+if selected_lads == []:
     practices = (
         dataset_dict[selected_year]["practice_display"].loc[dataset_dict[selected_year]["ICB name"] == icb_choice].unique().tolist()
     )
@@ -186,7 +204,7 @@ else:
     practices = (
         dataset_dict[selected_year]["practice_display"].loc[(dataset_dict[selected_year]["LA District name"].isin(lad_choice)) & (dataset_dict[selected_year]["ICB name"] == icb_choice)].tolist()
     )
-
+"""
 container_one = st.sidebar.container()
 
 if st.sidebar.button("Select all"):
@@ -200,7 +218,7 @@ practice_choice = container_one.multiselect(
     )
 
 
-
+"""
 place_name = st.sidebar.text_input(
     "Name your Place",
     "",
@@ -231,6 +249,7 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
                     st.session_state[place_name] = {
                         "gps": practice_choice,
                         "icb": icb_choice,
+                        "year": selected_year
                     }
                 if "places" not in st.session_state:
                     st.session_state.places = [place_name]
@@ -241,6 +260,7 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
                     st.session_state[place_name] = {
                         "gps": practice_choice,
                         "icb": icb_choice,
+                        "year": selected_year
                     }
                 if "places" not in st.session_state:
                     st.session_state.places = [place_name]
@@ -283,6 +303,14 @@ if advanced_options:
                 time.sleep(0.01)
                 my_bar.progress(percent_complete + 1)
             my_bar.empty()
+        
+            # Update the selected_year to reflect the last place in the uploaded session
+            last_place_year = st.session_state[st.session_state.places[-1]]["year"]
+            if last_place_year + ".csv" in datasets:
+                selected_year = last_place_year
+                print(selected_year)
+
+            st.experimental_rerun()  # Refresh the app to reflect the updated session state
 
 see_session_data = st.sidebar.checkbox("Show Session Data")
 
@@ -315,6 +343,7 @@ if delete_place:
                     "B85026: Kirkburton Health Centre",
                 ],
                 "icb": "NHS West Yorkshire ICB",
+                "year": selected_year
             }
         if "places" not in st.session_state:
             st.session_state.places = ["Default Place"]
@@ -327,6 +356,7 @@ if delete_place:
                     "B85026: Kirkburton Health Centre",
                 ],
                 "icb": "NHS West Yorkshire ICB",
+                "year": selected_year
             }
         st.session_state.places = ["Default Place"]
         st.session_state.after = "Default Place"
