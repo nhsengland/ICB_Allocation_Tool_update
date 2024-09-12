@@ -196,6 +196,7 @@ with st.sidebar.expander('Local Authority District Filter', expanded=False):
     
     selected_lads = lad_choice[lad_choice['tick']].LAD.tolist()
 
+
 if selected_lads == []:
     practices = (
         dataset_dict[selected_year]["practice_display"].loc[dataset_dict[selected_year]["ICB name"] == icb_choice].unique().tolist()
@@ -204,21 +205,28 @@ else:
     practices = (
         dataset_dict[selected_year]["practice_display"].loc[(dataset_dict[selected_year]["LA District name"].isin(lad_choice)) & (dataset_dict[selected_year]["ICB name"] == icb_choice)].tolist()
     )
-"""
-container_one = st.sidebar.container()
 
-if st.sidebar.button("Select all"):
-    st.session_state['multiselect_contents'] = practices
+# Create a DataFrame for the LADs with a 'tick' column
+gp_list_to_select = pd.DataFrame(practices, columns=['GP'])
+gp_list_to_select['tick'] = False
+gp_choice = []
 
-practice_choice = container_one.multiselect(
-    "Select GP Practices:",
-    practices,
-    key = 'multiselect_contents',
-    help="Select GP Practices to aggregate into a single defined 'place'. Start typing the name or code of a GP practice into the box to jump to it."
+with st.sidebar.expander("GP Practice Filter", expanded=False): 
+    if st.button("Select all"):
+        gp_list_to_select['tick'] = True
+
+    gp_choice = st.data_editor(
+    gp_list_to_select,
+        column_config={
+            "tick": st.column_config.CheckboxColumn("Select", default=False)
+        },
+        hide_index=True
     )
+    
+    gp_lads = gp_choice[gp_choice['tick']].GP.tolist()
 
 
-"""
+
 place_name = st.sidebar.text_input(
     "Name your Place",
     "",
