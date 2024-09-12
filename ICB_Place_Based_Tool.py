@@ -183,7 +183,7 @@ lad = dataset_dict[selected_year]["LA District name"].loc[
 ].unique().tolist()
 
 # Create a DataFrame for the LADs with a 'tick' column
-lad_list_to_select = pd.DataFrame(lad, columns=['LAD'])
+lad_list_to_select = pd.DataFrame(lad, columns=['Local Authority District'])
 lad_list_to_select['tick'] = False
 lad_choice = []
 
@@ -197,7 +197,7 @@ with st.sidebar.expander('Local Authority District Filter (optional)', expanded=
         hide_index=True
     )
     
-    selected_lads = lad_choice[lad_choice['tick']].LAD.tolist()
+    selected_lads = lad_choice[lad_choice['tick']]["Local Authority District"].tolist()
 
 
 if selected_lads == []:
@@ -211,13 +211,13 @@ else:
 
 
 # Create a DataFrame for the LADs with a 'tick' column
-practice_list_to_select = pd.DataFrame(practices, columns=['GP'])
+practice_list_to_select = pd.DataFrame(practices, columns=['GP Practice'])
 practice_list_to_select['tick'] = False
 practice_choice = []
 
 with st.sidebar.expander("GP Practice Filter (optional)", expanded=False): 
-    # Create two columns for the buttons
-    col1, col2, col3= st.columns(3)
+    # Create three columns for the buttons with reduced width
+    col1, col2, col3 = st.columns([1.1, 1.3, 2.2]) 
     
     # Place buttons in separate columns
     with col1:
@@ -228,16 +228,17 @@ with st.sidebar.expander("GP Practice Filter (optional)", expanded=False):
         if st.button("Deselect all"):
             practice_list_to_select['tick'] = False
 
+    # Practice choice table
     practice_choice = st.data_editor(
-    practice_list_to_select,
+        practice_list_to_select,
         column_config={
             "tick": st.column_config.CheckboxColumn("Select", default=False)
         },
         hide_index=True
     )
-    
-    selected_practices = practice_choice[practice_choice['tick']].GP.tolist()
 
+    # Get selected practices
+    selected_practices = practice_choice[practice_choice['tick']]["GP Practice"].tolist()
 
 
 place_name = st.sidebar.text_input(
