@@ -270,8 +270,7 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
                 if [place_name] not in st.session_state:
                     st.session_state[place_name] = {
                         "gps": selected_practices,
-                        "icb": icb_choice,
-                        "year": selected_year
+                        "icb": icb_choice
                     }
                 if "places" not in st.session_state:
                     st.session_state.places = [place_name]
@@ -280,9 +279,8 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
             else:
                 if [place_name] not in st.session_state:
                     st.session_state[place_name] = {
-                        "gps": selecteD_practices,
-                        "icb": icb_choice,
-                        "year": selected_year
+                        "gps": selected_practices,
+                        "icb": icb_choice
                     }
                 if "places" not in st.session_state:
                     st.session_state.places = [place_name]
@@ -325,14 +323,6 @@ if advanced_options:
                 time.sleep(0.01)
                 my_bar.progress(percent_complete + 1)
             my_bar.empty()
-        
-            # Update the selected_year to reflect the last place in the uploaded session
-            last_place_year = st.session_state[st.session_state.places[-1]]["year"]
-            if last_place_year + ".csv" in datasets:
-                selected_year = last_place_year
-                print(selected_year)
-
-            st.experimental_rerun()  # Refresh the app to reflect the updated session state
 
 see_session_data = st.sidebar.checkbox("Show Session Data")
 
@@ -364,8 +354,7 @@ if delete_place:
                     "B85061: Skelmanthorpe Family Doctors",
                     "B85026: Kirkburton Health Centre",
                 ],
-                "icb": "NHS West Yorkshire ICB",
-                "year": selected_year
+                "icb": "NHS West Yorkshire ICB"
             }
         if "places" not in st.session_state:
             st.session_state.places = ["Default Place"]
@@ -377,8 +366,7 @@ if delete_place:
                     "B85061: Skelmanthorpe Family Doctors",
                     "B85026: Kirkburton Health Centre",
                 ],
-                "icb": "NHS West Yorkshire ICB",
-                "year": selected_year
+                "icb": "NHS West Yorkshire ICB"
             }
         st.session_state.places = ["Default Place"]
         st.session_state.after = "Default Place"
