@@ -173,10 +173,11 @@ icb = utils.get_sidebar(dataset_dict[selected_year])
 # -------------------------------------------------------------------------
 st.sidebar.subheader("Create New Place")
 
-with st.sidebar.expander("Select an ICB (mandatory)"):
+# ICB Selection
+with st.sidebar.expander("Select an ICB"):
     icb_choice = st.selectbox("Select an ICB from the drop-down", icb, help="Select an ICB", label_visibility="hidden")
 
-# Generate the list of LADs
+# Generate the list of LADs based on ICB selection
 lad = dataset_dict[selected_year]["LA District name"].loc[
     dataset_dict[selected_year]["ICB name"] == icb_choice
 ].unique().tolist()
@@ -186,8 +187,8 @@ lad_list_to_select = pd.DataFrame(lad, columns=['Local Authority District'])
 lad_list_to_select['tick'] = False
 lad_choice = []
 
-# Use st.expander to maintain state
-with st.sidebar.expander('Local Authority District Filter (optional)', expanded=False):
+# Use st.expander to maintain state for LAD filter
+with st.sidebar.expander('Select Local Authority District(s)', expanded=False):
     lad_choice = st.data_editor(
         lad_list_to_select,
         column_config={
@@ -198,24 +199,26 @@ with st.sidebar.expander('Local Authority District Filter (optional)', expanded=
     
     selected_lads = lad_choice[lad_choice['tick']]["Local Authority District"].tolist()
 
-
-if selected_lads == []:
-    practices = (
-        dataset_dict[selected_year]["practice_display"].loc[dataset_dict[selected_year]["ICB name"] == icb_choice].unique().tolist()
-    )
+# Filter practices based on selected ICB and LADs
+if not selected_lads:
+    filtered_practices = dataset_dict[selected_year]["practice_display"].loc[
+        dataset_dict[selected_year]["ICB name"] == icb_choice
+    ].unique().tolist()
 else:
-    practices = (
-        dataset_dict[selected_year]["practice_display"].loc[(dataset_dict[selected_year]["LA District name"].isin(selected_lads)) & (dataset_dict[selected_year]["ICB name"] == icb_choice)].tolist()
-    )
+    filtered_practices = dataset_dict[selected_year]["practice_display"].loc[
+        (dataset_dict[selected_year]["LA District name"].isin(selected_lads)) & 
+        (dataset_dict[selected_year]["ICB name"] == icb_choice)
+    ].unique().tolist()
 
-
-# Initialize the practice list in session state if it doesn't exist
-if 'practice_list_to_select' not in st.session_state:
-    st.session_state.practice_list_to_select = pd.DataFrame(practices, columns=['GP Practice'])
+# Update session state with the filtered practices dynamically
+if 'practice_list_to_select' not in st.session_state or st.session_state.icb_choice != icb_choice or st.session_state.selected_lads != selected_lads:
+    st.session_state.practice_list_to_select = pd.DataFrame(filtered_practices, columns=['GP Practice'])
     st.session_state.practice_list_to_select['tick'] = False
+    st.session_state.icb_choice = icb_choice
+    st.session_state.selected_lads = selected_lads
 
 # Sidebar for GP Practice filter
-with st.sidebar.expander("GP Practice Filter (optional)", expanded=False):
+with st.sidebar.expander("Select GP Practice(s)", expanded=False):
     # Create three columns for the buttons with reduced width
     col1, col2, col3 = st.columns([1.1, 1.3, 2.2])
 
