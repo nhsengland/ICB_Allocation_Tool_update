@@ -206,3 +206,16 @@ def get_data_for_all_years(dataset_dict, session_state, aggregations, index_nume
 
     return dataset_dict
 
+# Helper function to inject CSS for sidebar width
+def set_sidebar_width(min_width=300, max_width=300):
+    st.markdown(
+        f"""
+        <style>
+        [data-testid="stSidebar"] {{
+            min-width: {min_width}px;
+            max-width: {max_width}px;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )

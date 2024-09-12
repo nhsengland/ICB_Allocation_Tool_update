@@ -148,6 +148,8 @@ st.markdown("Last Updated 17th January 2023")
 
 # SIDEBAR Prologue (have to run before loading data)
 # -------------------------------------------------------------------------
+# Call the function to set sidebar width
+utils.set_sidebar_width(min_width=500, max_width=500)
 
 datasets = os.listdir('data/')
 
@@ -172,7 +174,8 @@ icb = utils.get_sidebar(dataset_dict[selected_year])
 # -------------------------------------------------------------------------
 st.sidebar.subheader("Create New Place")
 
-icb_choice = st.sidebar.selectbox("ICB Filter:", icb, help="Select an ICB")
+with st.sidebar.expander("Select an ICB (mandatory)"):
+    icb_choice = st.selectbox("Select an ICB from the drop-down", icb, help="Select an ICB", label_visibility="hidden")
 
 # Generate the list of LADs
 lad = dataset_dict[selected_year]["LA District name"].loc[
@@ -185,7 +188,7 @@ lad_list_to_select['tick'] = False
 lad_choice = []
 
 # Use st.expander to maintain state
-with st.sidebar.expander('Local Authority District Filter', expanded=False):
+with st.sidebar.expander('Local Authority District Filter (optional)', expanded=False):
     lad_choice = st.data_editor(
         lad_list_to_select,
         column_config={
@@ -203,27 +206,37 @@ if selected_lads == []:
     )
 else:
     practices = (
-        dataset_dict[selected_year]["practice_display"].loc[(dataset_dict[selected_year]["LA District name"].isin(lad_choice)) & (dataset_dict[selected_year]["ICB name"] == icb_choice)].tolist()
+        dataset_dict[selected_year]["practice_display"].loc[(dataset_dict[selected_year]["LA District name"].isin(selected_lads)) & (dataset_dict[selected_year]["ICB name"] == icb_choice)].tolist()
     )
 
+
 # Create a DataFrame for the LADs with a 'tick' column
-gp_list_to_select = pd.DataFrame(practices, columns=['GP'])
-gp_list_to_select['tick'] = False
-gp_choice = []
+practice_list_to_select = pd.DataFrame(practices, columns=['GP'])
+practice_list_to_select['tick'] = False
+practice_choice = []
 
-with st.sidebar.expander("GP Practice Filter", expanded=False): 
-    if st.button("Select all"):
-        gp_list_to_select['tick'] = True
+with st.sidebar.expander("GP Practice Filter (optional)", expanded=False): 
+    # Create two columns for the buttons
+    col1, col2, col3= st.columns(3)
+    
+    # Place buttons in separate columns
+    with col1:
+        if st.button("Select all"):
+            practice_list_to_select['tick'] = True
 
-    gp_choice = st.data_editor(
-    gp_list_to_select,
+    with col2:
+        if st.button("Deselect all"):
+            practice_list_to_select['tick'] = False
+
+    practice_choice = st.data_editor(
+    practice_list_to_select,
         column_config={
             "tick": st.column_config.CheckboxColumn("Select", default=False)
         },
         hide_index=True
     )
     
-    gp_lads = gp_choice[gp_choice['tick']].GP.tolist()
+    selected_practices = practice_choice[practice_choice['tick']].GP.tolist()
 
 
 
@@ -234,8 +247,8 @@ place_name = st.sidebar.text_input(
 )
 
 if st.sidebar.button("Save Place", help="Save place to session data"):
-    if practice_choice == [] or place_name == "Default Place":
-        if practice_choice == []:
+    if selected_practices == [] or place_name == "Default Place":
+        if selected_practices == []:
             st.sidebar.error("Please select one or more GP practices")
         if place_name == "Default Place":
             st.sidebar.error(
@@ -244,7 +257,7 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
     if place_name == "":
         st.sidebar.error("Please give your place a name")
     else:
-        if practice_choice == [] or place_name == "Default Place":
+        if selected_practices == [] or place_name == "Default Place":
             print("")
         else:
             if (
@@ -255,7 +268,7 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
                 del [st.session_state.places[0]]
                 if [place_name] not in st.session_state:
                     st.session_state[place_name] = {
-                        "gps": practice_choice,
+                        "gps": selected_practices,
                         "icb": icb_choice,
                         "year": selected_year
                     }
@@ -266,7 +279,7 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
             else:
                 if [place_name] not in st.session_state:
                     st.session_state[place_name] = {
-                        "gps": practice_choice,
+                        "gps": selecteD_practices,
                         "icb": icb_choice,
                         "year": selected_year
                     }
