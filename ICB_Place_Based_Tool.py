@@ -64,8 +64,7 @@ if len(st.session_state) < 1:
             "B85061: Skelmanthorpe Family Doctors",
             "B85026: Kirkburton Health Centre",
         ],
-        "icb": "NHS West Yorkshire ICB",
-        "year": "2023_2024"
+        "icb": "NHS West Yorkshire ICB"
     }
 if "places" not in st.session_state:
     st.session_state.places = ["Default Place"]
@@ -210,36 +209,41 @@ else:
     )
 
 
-# Create a DataFrame for the LADs with a 'tick' column
-practice_list_to_select = pd.DataFrame(practices, columns=['GP Practice'])
-practice_list_to_select['tick'] = False
-practice_choice = []
+# Initialize the practice list in session state if it doesn't exist
+if 'practice_list_to_select' not in st.session_state:
+    st.session_state.practice_list_to_select = pd.DataFrame(practices, columns=['GP Practice'])
+    st.session_state.practice_list_to_select['tick'] = False
 
-with st.sidebar.expander("GP Practice Filter (optional)", expanded=False): 
+# Sidebar for GP Practice filter
+with st.sidebar.expander("GP Practice Filter (optional)", expanded=False):
     # Create three columns for the buttons with reduced width
-    col1, col2, col3 = st.columns([1.1, 1.3, 2.2]) 
-    
+    col1, col2, col3 = st.columns([1.1, 1.3, 2.2])
+
     # Place buttons in separate columns
     with col1:
         if st.button("Select all"):
-            practice_list_to_select['tick'] = True
+            st.session_state.practice_list_to_select['tick'] = True
 
     with col2:
         if st.button("Deselect all"):
-            practice_list_to_select['tick'] = False
+            st.session_state.practice_list_to_select['tick'] = False
 
     # Practice choice table
     practice_choice = st.data_editor(
-        practice_list_to_select,
+        st.session_state.practice_list_to_select,
         column_config={
             "tick": st.column_config.CheckboxColumn("Select", default=False)
         },
         hide_index=True
     )
 
-    # Get selected practices
-    selected_practices = practice_choice[practice_choice['tick']]["GP Practice"].tolist()
+    # Update the session state with any changes made in the data editor
+    st.session_state.practice_list_to_select = practice_choice
 
+# Get selected practices
+selected_practices = st.session_state.practice_list_to_select[
+    st.session_state.practice_list_to_select['tick']
+]["GP Practice"].tolist()
 
 place_name = st.sidebar.text_input(
     "Name your Place",
