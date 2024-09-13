@@ -66,9 +66,9 @@ if len(st.session_state) < 1:
         ],
         "icb": "NHS West Yorkshire ICB",
     }
+    st.session_state["year"] = "2023_24"
 if "places" not in st.session_state:
     st.session_state.places = ["Default Place"]
-
 # Functions & Calls
 # -------------------------------------------------------------------------
 
@@ -149,10 +149,33 @@ st.markdown("Last Updated 17th January 2023")
 # -------------------------------------------------------------------------
 
 datasets = os.listdir('data/')
+# Determine the default year based on session state
+if 'year' in st.session_state:
+    default_year = st.session_state['year']
+    default_dataset = f"{default_year}.csv"
+else:
+    default_year = datasets[0].replace('.csv', '')
+    default_dataset = f"{default_year}.csv"
 
-selected_dataset = st.sidebar.selectbox("Time Period:", options = datasets, help="Select a time period", format_func=lambda x : x.replace('.csv','').replace('_','/'))
+# Check if the default dataset exists in the list of datasets
+if default_dataset in datasets:
+    default_index = datasets.index(default_dataset)
+else:
+    default_index = 0  # Fall back to the first dataset if the default year dataset is not found
+
+# Create a selectbox for choosing a time period
+selected_dataset = st.sidebar.selectbox(
+    "Time Period:",
+    options=datasets,
+    help="Select a time period",
+    format_func=lambda x: x.replace('.csv', '').replace('_', '/'),
+    index=default_index
+)
+
+# Extract the selected year
 selected_year = selected_dataset.replace('.csv', '')
 
+st.sidebar.write("-" * 34)  # horizontal separator line.
 
 # Import Data
 # -------------------------------------------------------------------------
@@ -208,6 +231,7 @@ place_name = st.sidebar.text_input(
 )
 
 if st.sidebar.button("Save Place", help="Save place to session data"):
+    st.session_state["year"] = selected_year
     if practice_choice == [] or place_name == "Default Place":
         if practice_choice == []:
             st.sidebar.error("Please select one or more GP practices")
@@ -225,9 +249,9 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
                 len(st.session_state.places) <= 1
                 and st.session_state.places[0] == "Default Place"
             ):
-                del [st.session_state["Default Place"]]
-                del [st.session_state.places[0]]
-                if [place_name] not in st.session_state:
+                del st.session_state["Default Place"]
+                del st.session_state.places[0]
+                if place_name not in st.session_state:
                     st.session_state[place_name] = {
                         "gps": practice_choice,
                         "icb": icb_choice,
@@ -235,9 +259,9 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
                 if "places" not in st.session_state:
                     st.session_state.places = [place_name]
                 if place_name not in st.session_state.places:
-                    st.session_state.places = st.session_state.places + [place_name]
+                    st.session_state.places.append(place_name)
             else:
-                if [place_name] not in st.session_state:
+                if place_name not in st.session_state:
                     st.session_state[place_name] = {
                         "gps": practice_choice,
                         "icb": icb_choice,
@@ -245,14 +269,15 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
                 if "places" not in st.session_state:
                     st.session_state.places = [place_name]
                 if place_name not in st.session_state.places:
-                    st.session_state.places = st.session_state.places + [place_name]
+                    st.session_state.places.append(place_name)
 
 st.sidebar.write("-" * 34)  # horizontal separator line.
 
 session_state_dict = dict.fromkeys(st.session_state.places, [])
-for key, value in session_state_dict.items():
+for key in session_state_dict.keys():
     session_state_dict[key] = st.session_state[key]
 session_state_dict["places"] = st.session_state.places
+session_state_dict["year"] = st.session_state.year
 
 session_state_dump = json.dumps(session_state_dict, indent=4, sort_keys=False)
 
@@ -275,14 +300,18 @@ if advanced_options:
     if submit:
         if group_file is not None:
             d = json.load(group_file)
-            st.session_state.places = d["places"]
-            for place in d["places"]:
-                st.session_state[place] = d[place]
+            st.session_state.places = d.get("places", ["Default Place"])
+            for place in st.session_state.places:
+                st.session_state[place] = d.get(place, {})
+            st.session_state["year"] = d.get("year", "2023_24")
             my_bar = st.sidebar.progress(0)
             for percent_complete in range(100):
                 time.sleep(0.01)
                 my_bar.progress(percent_complete + 1)
             my_bar.empty()
+
+            st.experimental_rerun()
+    
 
 see_session_data = st.sidebar.checkbox("Show Session Data")
 
@@ -316,6 +345,7 @@ if delete_place:
                 ],
                 "icb": "NHS West Yorkshire ICB",
             }
+            st.session_state["year"] = selected_year
         if "places" not in st.session_state:
             st.session_state.places = ["Default Place"]
         else:
@@ -328,6 +358,7 @@ if delete_place:
                 ],
                 "icb": "NHS West Yorkshire ICB",
             }
+            st.session_state["year"] = selected_year
         st.session_state.places = ["Default Place"]
         st.session_state.after = "Default Place"
         st.warning(
@@ -397,7 +428,9 @@ list_of_gps = re.sub(
     "",
     str(group_gp_list).replace("'", "").replace("[", "").replace("]", ""),
 )
-st.info("**Selected GP Practices: **" + list_of_gps)
+st.info(f"This information pertains to the {selected_year.replace("_","/")} time period.")
+st.info("Selected GP Practices: " + list_of_gps)
+
 
 gp_query = "practice_display == @place_state"
 icb_query = "`ICB name` == @icb_state"  # escape column names with backticks https://stackoverflow.com/a/56157729
