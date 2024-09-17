@@ -1,0 +1,27 @@
+#Sets the allocation year that is used to populate dashboard titles
+allocations_year = '2023/24 and 2024/25'
+
+#Sets the relative component weighting values displayed on the main page
+[[relativeweightings]]
+header = "Gen & Acute"
+value = 0.765260452979535
+
+[[relativeweightings]]
+header = "Community*"
+value = 0.0633250451725901
+
+[[relativeweightings]]
+header = "Mental Health"
+value = 0.129976262027642
+
+[[relativeweightings]]
+header = "Maternity"
+value = 0.0414382398202333
+
+[[relativeweightings]]
+header = "Prescribing"
+value = 0.0945657876381091
+
+[[relativeweightings]]
+header = "Health Inequals"
+value = 0.1
