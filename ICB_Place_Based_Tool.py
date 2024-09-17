@@ -33,6 +33,11 @@ import streamlit as st
 import pandas as pd
 from streamlit_folium import folium_static
 import folium
+import toml
+
+#Config setup for Relative Component Weightings
+config = toml.load('config.toml')
+relativeweightings = config['relativeweightings']
 
 st.set_page_config(
     page_title="ICB Place Based Allocation Tool",
@@ -88,8 +93,10 @@ def convert_df(df):
 
 #Metric calcs. 
 def metric_calcs(group_need_indices, metric_index):
-    place_metric = round(group_need_indices[metric_index][0].astype(float), 2)
-    icb_metric = round(place_metric - 1, 2)
+    # Convert the value to float and round it using excel_round to 2 decimal places
+    place_metric = utils.excel_round(group_need_indices[metric_index][0].astype(float), 0.01)
+    # Subtract 1 and then round again using excel_round to 2 decimal places
+    icb_metric = utils.excel_round(place_metric - 1, 0.01)
     return place_metric, icb_metric
 
 
@@ -522,7 +529,6 @@ metric_names = [
 place_metric, icb_metric = metric_calcs(df, "Overall Core Index")
 place_metric = "{:.2f}".format(place_metric)
 st.header("Core Index: " + str(place_metric))
-st.caption("For relative weighting of components, see the 2nd rows in [workbook J](https://www.england.nhs.uk/wp-content/uploads/2022/04/j-overall-weighted-populations-22-23.xlsx) tabs 'ICB weighted population' and 'GP weighted population'.")
 
 with st.expander("Core Sub Indices", expanded  = True):
 
@@ -537,6 +543,15 @@ with st.expander("Core Sub Indices", expanded  = True):
             name,
             place_metric,  # icb_metric, delta_color="inverse"
         )
+
+#Component Relative Weighting
+with st.expander("Relative Weighting of Components"):
+    num_columns = len(relativeweightings)
+    cols = st.columns(num_columns)
+    for col, metric in zip(cols, relativeweightings):
+        header = metric['header']
+        value = metric['value']
+        col.metric(header, f"{value:.2f}")
 
 #Primary Care Index
 #Core Index
