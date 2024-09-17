@@ -93,8 +93,10 @@ def convert_df(df):
 
 #Metric calcs. 
 def metric_calcs(group_need_indices, metric_index):
-    place_metric = round(group_need_indices[metric_index][0].astype(float), 2)
-    icb_metric = round(place_metric - 1, 2)
+    # Convert the value to float and round it using excel_round to 2 decimal places
+    place_metric = utils.excel_round(group_need_indices[metric_index][0].astype(float), 0.01)
+    # Subtract 1 and then round again using excel_round to 2 decimal places
+    icb_metric = utils.excel_round(place_metric - 1, 0.01)
     return place_metric, icb_metric
 
 

@@ -2,6 +2,7 @@ import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
 
 import pandas as pd
+from decimal import Decimal, ROUND_HALF_UP
 import os
 
 # Load data and cache
@@ -108,7 +109,7 @@ def aggregate(df, name, on, aggregations):
     if on not in df.columns:
         df.insert(loc=0, column=on, value=name)
     df_group = df.groupby(on).agg(aggregations)
-    df_group = df_group.round(0).astype(int)
+    df_group = df_group.applymap(lambda x: excel_round(x, 1)).astype(int)
     return df, df_group
 
 #Calculate index of weighted populations. Take the groupby output fromn the aggregator and divides it by the population number. Do it by icb and place. 
@@ -214,8 +215,34 @@ def get_data_for_all_years(dataset_dict, session_state, aggregations, index_nume
         # flaten list for concatination
         flat_list = [item for sublist in df_list for item in sublist]
         large_df = pd.concat(flat_list, ignore_index=True)
-        large_df = large_df.round(decimals=3)
+        large_df = large_df.applymap(lambda x: excel_round(x, 0.001))
         dataset_dict[filename] = large_df
 
     return dataset_dict
 
+
+
+def excel_round(number, precision=0.01) -> float:
+    """
+    Rounds a number to a specified precision using the "round half up" method, similar to Excel.
+
+    Parameters:
+    number (float/int): The number to be rounded.
+    precision (float/int): The precision to round to (e.g., 0.1, 0.01, 100, etc.).
+
+    Returns:
+    float: The rounded number, or the original value if it's not numeric.
+    """
+    try:
+        if isinstance(number, (int, float)):  # Ensure the number is numeric
+            if precision > 1:  # For rounding to nearest ten, hundreds, etc.
+                rounded_num = round(number / precision) * precision
+            else:  # For decimal precision
+                number = Decimal(str(number))
+                precision = Decimal(str(precision))
+                rounded_num = number.quantize(precision, rounding=ROUND_HALF_UP)
+            return float(rounded_num)
+        else:
+            return number  # Return the value unchanged if it's not numeric
+    except (ValueError, InvalidOperation):
+        return number  # Return the value unchanged if there's an error during conversion
