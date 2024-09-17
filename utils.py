@@ -1,5 +1,5 @@
 import streamlit as st
-from st_aggrid import AgGrid
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 import pandas as pd
 import os
@@ -61,9 +61,23 @@ def get_sidebar(data):
     icb.sort()
     return icb
 
-
+# Example utility function to render a table with the first column frozen and no bottom bar
 def write_table(data):
-    return AgGrid(data)
+    # Create grid options to pin the first column
+    gb = GridOptionsBuilder.from_dataframe(data)
+    gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc='sum', editable=True)
+    
+    # Freeze the first column (index 0)
+    gb.configure_column(list(data.columns)[0], pinned='left')
+    
+    # Remove pagination and bottom panel
+    gridOptions = gb.build()
+    gridOptions['pagination'] = False  # Disable pagination
+    gridOptions['suppressPaginationPanel'] = True  # Hide pagination controls
+    gridOptions['suppressRowVirtualisation'] = True  # Disable row virtualization to avoid pagination rendering
+    
+    # Display the table with AgGrid
+    return AgGrid(data, gridOptions=gridOptions, height=400, enable_enterprise_modules=True)
 
 
 def write_headers(sheet, *csv_headers):
