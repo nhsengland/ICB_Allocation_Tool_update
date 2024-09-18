@@ -71,7 +71,7 @@ if len(st.session_state) < 1:
         ],
         "icb": "NHS West Yorkshire ICB"
     }
-    st.session_state["year"] = "2023_24"
+    st.session_state["year"] = "2023_2024"
 if "places" not in st.session_state:
     st.session_state.places = ["Default Place"]
 # Functions & Calls
@@ -349,14 +349,14 @@ if advanced_options:
             st.session_state.places = d.get("places", ["Default Place"])
             for place in st.session_state.places:
                 st.session_state[place] = d.get(place, {})
-            st.session_state["year"] = d.get("year", "2023_24")
+            st.session_state["year"] = d.get("year", "2023_2024")
             my_bar = st.sidebar.progress(0)
             for percent_complete in range(100):
                 time.sleep(0.01)
                 my_bar.progress(percent_complete + 1)
             my_bar.empty()
 
-            st.nerun()
+            st.rerun()
     
 
 see_session_data = st.sidebar.checkbox("Show Session Data")
