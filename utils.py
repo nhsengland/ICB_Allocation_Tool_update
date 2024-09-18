@@ -6,7 +6,7 @@ from decimal import Decimal, ROUND_HALF_UP
 import os
 
 # Load data and cache
-@st.cache()  # use Streamlit cache decorator to cache this operation so data doesn't have to be read in everytime script is re-run
+@st.cache_data()  # use Streamlit cache decorator to cache this operation so data doesn't have to be read in everytime script is re-run
 def get_data(path):
     print('cache miss')
     df = pd.read_csv(path)
@@ -50,13 +50,14 @@ def get_data(path):
 
 
 # Store defined places in a list to access them later for place based calculations
-@st.cache(allow_output_mutation=True)
 def store_data():
-    return []
+    if 'data_list' not in st.session_state:
+        st.session_state.data_list = []
+    return st.session_state.data_list
 
 
 # Sidebar dropdown list
-@st.cache
+@st.cache_data
 def get_sidebar(data):
     icb = data["ICB name"].unique().tolist()
     icb.sort()
@@ -246,3 +247,17 @@ def excel_round(number, precision=0.01) -> float:
             return number  # Return the value unchanged if it's not numeric
     except (ValueError, InvalidOperation):
         return number  # Return the value unchanged if there's an error during conversion
+
+# Helper function to inject CSS for sidebar width
+def set_sidebar_width(min_width=300, max_width=300):
+    st.markdown(
+        f"""
+        <style>
+        [data-testid="stSidebar"] {{
+            min-width: {min_width}px;
+            max-width: {max_width}px;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
