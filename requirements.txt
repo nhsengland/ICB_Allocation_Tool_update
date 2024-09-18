@@ -6,4 +6,3 @@ regex~=2021.11.10
 altair==4.0
 numpy==1.26.4
 pytest
-xslxwriter

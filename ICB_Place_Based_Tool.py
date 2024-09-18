@@ -356,7 +356,7 @@ if advanced_options:
                 my_bar.progress(percent_complete + 1)
             my_bar.empty()
 
-            st.experimental_rerun()
+            st.nerun()
     
 
 see_session_data = st.sidebar.checkbox("Show Session Data")
