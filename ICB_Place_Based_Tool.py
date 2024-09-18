@@ -69,7 +69,7 @@ if len(st.session_state) < 1:
             "B85061: Skelmanthorpe Family Doctors",
             "B85026: Kirkburton Health Centre",
         ],
-        "icb": "NHS West Yorkshire ICB",
+        "icb": "NHS West Yorkshire ICB"
     }
 if "places" not in st.session_state:
     st.session_state.places = ["Default Place"]
@@ -87,7 +87,7 @@ def render_svg(svg):
 
 
 # Download functionality
-@st.cache
+@st.cache_data
 def convert_df(df):
     return df.to_csv(index=False).encode("utf-8")
 
@@ -154,6 +154,8 @@ st.markdown("Last Updated 17th January 2023")
 
 # SIDEBAR Prologue (have to run before loading data)
 # -------------------------------------------------------------------------
+# Call the function to set sidebar width
+utils.set_sidebar_width(min_width=500, max_width=500)
 
 datasets = os.listdir('data/')
 
@@ -178,34 +180,71 @@ icb = utils.get_sidebar(dataset_dict[selected_year])
 # -------------------------------------------------------------------------
 st.sidebar.subheader("Create New Place")
 
-icb_choice = st.sidebar.selectbox("ICB Filter:", icb, help="Select an ICB")
+# ICB Selection
+with st.sidebar.expander("Select an ICB", expanded=True):
+    icb_choice = st.selectbox("Select an ICB from the drop-down", icb, help="Select an ICB", label_visibility="hidden")
 
-lad = dataset_dict[selected_year]["LA District name"].loc[dataset_dict[selected_year]["ICB name"] == icb_choice].unique().tolist()
+# Generate the list of LADs based on ICB selection
+lad = dataset_dict[selected_year]["LA District name"].loc[
+    dataset_dict[selected_year]["ICB name"] == icb_choice
+].unique().tolist()
 
-lad_choice = st.sidebar.multiselect(
-    "Local Authority District Filter:", lad, help="Select a Local Authority District"
-)
-if lad_choice == []:
-    practices = (
-        dataset_dict[selected_year]["practice_display"].loc[dataset_dict[selected_year]["ICB name"] == icb_choice].unique().tolist()
+# Create a DataFrame for the LADs with a 'tick' column
+lad_list_to_select = pd.DataFrame(lad, columns=['Local Authority District'])
+lad_list_to_select['tick'] = False
+
+# Use st.expander to maintain state for LAD filter
+with st.sidebar.expander('Select Local Authority District(s)', expanded=False):
+    lad_choice = st.data_editor(
+        lad_list_to_select,
+        column_config={
+            "tick": st.column_config.CheckboxColumn("Select", default=False)
+        },
+        hide_index=True
     )
+    
+    selected_lads = lad_choice[lad_choice['tick']]["Local Authority District"].tolist()
+
+# Filter practices based on selected ICB and LADs
+if not selected_lads:
+    filtered_practices = dataset_dict[selected_year]["practice_display"].loc[
+        dataset_dict[selected_year]["ICB name"] == icb_choice
+    ].unique().tolist()
 else:
-    practices = (
-        dataset_dict[selected_year]["practice_display"].loc[(dataset_dict[selected_year]["LA District name"].isin(lad_choice)) & (dataset_dict[selected_year]["ICB name"] == icb_choice)].tolist()
+    filtered_practices = dataset_dict[selected_year]["practice_display"].loc[
+        (dataset_dict[selected_year]["LA District name"].isin(selected_lads)) & 
+        (dataset_dict[selected_year]["ICB name"] == icb_choice)
+    ].unique().tolist()
+
+# Create DataFrame for GP practices with a 'tick' column
+practice_list_to_select = pd.DataFrame(filtered_practices, columns=['GP Practice'])
+practice_list_to_select['tick'] = False
+
+# Sidebar for GP Practice filter
+with st.sidebar.expander("Select GP Practice(s)", expanded=False):
+    # Create three columns for the buttons with reduced width
+    col1, col2, col3 = st.columns([1.1, 1.3, 2.2])
+
+    # Place buttons in separate columns
+    with col1:
+        if st.button("Select all"):
+            practice_list_to_select['tick'] = True
+
+    with col2:
+        if st.button("Deselect all"):
+            practice_list_to_select['tick'] = False
+
+    # Practice choice table
+    practice_choice = st.data_editor(
+        practice_list_to_select,
+        column_config={
+            "tick": st.column_config.CheckboxColumn("Select", default=False)
+        },
+        hide_index=True
     )
 
-container_one = st.sidebar.container()
-
-if st.sidebar.button("Select all"):
-    st.session_state['multiselect_contents'] = practices
-
-practice_choice = container_one.multiselect(
-    "Select GP Practices:",
-    practices,
-    key = 'multiselect_contents',
-    help="Select GP Practices to aggregate into a single defined 'place'. Start typing the name or code of a GP practice into the box to jump to it."
-    )
-
+# Get selected practices
+selected_practices = practice_choice[practice_choice['tick']]["GP Practice"].tolist()
 
 
 place_name = st.sidebar.text_input(
@@ -215,8 +254,8 @@ place_name = st.sidebar.text_input(
 )
 
 if st.sidebar.button("Save Place", help="Save place to session data"):
-    if practice_choice == [] or place_name == "Default Place":
-        if practice_choice == []:
+    if selected_practices == [] or place_name == "Default Place":
+        if selected_practices == []:
             st.sidebar.error("Please select one or more GP practices")
         if place_name == "Default Place":
             st.sidebar.error(
@@ -225,7 +264,7 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
     if place_name == "":
         st.sidebar.error("Please give your place a name")
     else:
-        if practice_choice == [] or place_name == "Default Place":
+        if selected_practices == [] or place_name == "Default Place":
             print("")
         else:
             if (
@@ -236,8 +275,8 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
                 del [st.session_state.places[0]]
                 if [place_name] not in st.session_state:
                     st.session_state[place_name] = {
-                        "gps": practice_choice,
-                        "icb": icb_choice,
+                        "gps": selected_practices,
+                        "icb": icb_choice
                     }
                 if "places" not in st.session_state:
                     st.session_state.places = [place_name]
@@ -246,8 +285,8 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
             else:
                 if [place_name] not in st.session_state:
                     st.session_state[place_name] = {
-                        "gps": practice_choice,
-                        "icb": icb_choice,
+                        "gps": selected_practices,
+                        "icb": icb_choice
                     }
                 if "places" not in st.session_state:
                     st.session_state.places = [place_name]
@@ -321,7 +360,7 @@ if delete_place:
                     "B85061: Skelmanthorpe Family Doctors",
                     "B85026: Kirkburton Health Centre",
                 ],
-                "icb": "NHS West Yorkshire ICB",
+                "icb": "NHS West Yorkshire ICB"
             }
         if "places" not in st.session_state:
             st.session_state.places = ["Default Place"]
@@ -333,7 +372,7 @@ if delete_place:
                     "B85061: Skelmanthorpe Family Doctors",
                     "B85026: Kirkburton Health Centre",
                 ],
-                "icb": "NHS West Yorkshire ICB",
+                "icb": "NHS West Yorkshire ICB"
             }
         st.session_state.places = ["Default Place"]
         st.session_state.after = "Default Place"

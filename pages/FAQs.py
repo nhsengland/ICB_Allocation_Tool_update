@@ -3,6 +3,7 @@ import base64
 from pathlib import Path
 import time
 import toml
+import utils
 
 config = toml.load('config.toml')
 
