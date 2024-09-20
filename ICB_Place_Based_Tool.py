@@ -7,7 +7,7 @@
 """
 FILE:           ICB_Place_Based_Tool.py
 DESCRIPTION:    Streamlit weighted capitation tool
-CONTRIBUTORS:   Craig Shenton, Jonathan Pearson, Mattia Ficarelli   
+CONTRIBUTORS:   Craig Shenton, Jonathan Pearson, Mattia Ficarelli, Samuel Leat, Jennifer Struthers
 CONTACT:        england.revenue-allocations@nhs.net
 CREATED:        2021-12-14
 VERSION:        0.0.1
@@ -161,6 +161,8 @@ datasets = os.listdir('data/')
 
 selected_dataset = st.sidebar.selectbox("Time Period:", options = datasets, help="Select a time period", format_func=lambda x : x.replace('.csv','').replace('_','/'))
 selected_year = selected_dataset.replace('.csv', '')
+
+st.sidebar.write("-" * 34)  # horizontal separator line.
 
 
 # Import Data
@@ -443,7 +445,9 @@ list_of_gps = re.sub(
     "",
     str(group_gp_list).replace("'", "").replace("[", "").replace("]", ""),
 )
-st.info("**Selected GP Practices: **" + list_of_gps)
+st.info(f"This information pertains to the **{selected_year.replace("_","/")}** time period")
+st.info("**Selected GP Practices:**" + list_of_gps)
+
 
 gp_query = "practice_display == @place_state"
 icb_query = "`ICB name` == @icb_state"  # escape column names with backticks https://stackoverflow.com/a/56157729
