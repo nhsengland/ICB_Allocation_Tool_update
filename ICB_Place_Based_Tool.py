@@ -555,7 +555,7 @@ with st.expander("Core Sub Indices", expanded  = True):
         )
 
 #Component Relative Weighting
-with st.expander("Relative Weighting of Components"):
+with st.expander("Relative Weighting of Core Sub-Indices"):
     num_columns = len(relativeweightings)
     cols = st.columns(num_columns)
     for col, metric in zip(cols, relativeweightings):
