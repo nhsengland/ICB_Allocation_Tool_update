@@ -524,6 +524,7 @@ metric_cols = [
     "Mental Health Index",
     "Maternity Index",
     "Prescribing Index",
+    "Primary Medical Care Need Index",
     "Health Inequalities Index",
 ]
 
@@ -533,6 +534,7 @@ metric_names = [
     "Mental Health",
     "Maternity",
     "Prescribing",
+    "Other Primary Services",
     "Health Inequals",
 ]
 
