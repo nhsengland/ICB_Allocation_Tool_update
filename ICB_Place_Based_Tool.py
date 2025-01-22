@@ -647,7 +647,7 @@ with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
         for r, row in enumerate(df.values, start=start_row+1):
             worksheet.write_row(r,0,row)
     # Save the Excel file
-    writer.save()
+    writer.close()
 
 # Move the pointer of the buffer to the beginning
 excel_buffer.seek(0)
