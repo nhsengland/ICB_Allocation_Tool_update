@@ -540,7 +540,7 @@ metric_cols2 = [
 
 metric_names2 = [
     "Prescribing",
-    "Other Primary Services",
+    "Primary Medical Care in Core",
     "Health Inequals",
 ]
 
@@ -562,7 +562,7 @@ with st.expander("Core Sub Indices", expanded  = True):
             place_metric,  # icb_metric, delta_color="inverse"
         )
 
-    cols = st.columns(len(metric_cols2)+1)
+    cols = st.columns(len(metric_cols2))
     for metric, name in zip(metric_cols2, metric_names2):
         place_metric, icb_metric = metric_calcs(
             df,
