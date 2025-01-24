@@ -155,9 +155,9 @@ with st.expander("How do I create a place?"):
 with st.expander("How do I view my saved places?"):
     st.markdown("""
         To view the places you created and their relative need indices, some user input is required in the main body of the tool, on the right-hand side. This functionality allows you to check the places you created, change them, and view their relative need indices.
-        \n\nNote that you can only view one place at a time in the part of the tool displayed in Figure 2.
+        \n\nPlease note that the section of the tool shown in Figure 3 below will only display data for the selected place (see step a below) and for the year selected in the sidebar (step 1a above).  If the version of the tool you are using contains multiple years of data, you can switch between them for the selected place by changing the year selected in the sidebar.
     """)
-    st.image("images/PBTFAQ3.png", caption="Figure 3: A screenshot showing the main area of the Place Based Tool and identifying the various components of the page.")
+    st.image("images/PBTFAQ3.png", caption="Figure 3: A screenshot showing the main area of the Place Based Tool and identifying the various components of the page.", width=533)
     st.markdown("""
         **3a)** Once you have created a new place, the place name will become available in the main page dropdown menu. If you create multiple places, you can switch between them here. The place you select in this dropdown is the active place, and while it is active (i.e. you have it selected) the page elements 2b, 2c, 2d, and 2e will all refer to the active place.
         \n\n**3b)** If you want to remove the active place completely, click the button “Delete current selection”. If you delete all of your saved places, the app will return to the default place shown in Figure 1.
@@ -196,7 +196,7 @@ with st.expander("How do I save and return to my session?"):
     col1, col2 = st.columns(2)
 
     with col1:
-        st.image("images/PBTFAQ5.png", caption="Figure 5: A screenshot showing the advanced options and session data download options in the Place Based Tool's sidebar.", width=346)
+        st.image("images/PBTFAQ5.png", caption="Figure 5: A screenshot showing the advanced options and session data download options in the Place Based Tool's sidebar.")
 
     with col2:
         st.markdown("""
