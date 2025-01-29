@@ -76,6 +76,7 @@ with st.expander("What does the tool do?"):
             - Mental health services
             - Maternity
             - Prescribing
+            - Primary Medical Care in Core Services
         - Primary Medical Care:
             - Primary Medicare Care need
         - Cross-cutting components:
@@ -125,7 +126,7 @@ with st.expander("How do I create a place?"):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.image("images/PBTFAQ2.png", caption="Figure 2: A screenshot showing the drop-down menu to select GP practices and higlighting the Search and Fullscreen buttons."
+        st.image("images/PBTFAQ1.2.png", caption="Figure 1.2: A screenshot showing the drop-down menu to select GP practices and higlighting the Search and Fullscreen buttons."
             #, width=345
         )
 
@@ -155,32 +156,32 @@ with st.expander("How do I create a place?"):
 with st.expander("How do I view my saved places?"):
     st.markdown("""
         To view the places you created and their relative need indices, some user input is required in the main body of the tool, on the right-hand side. This functionality allows you to check the places you created, change them, and view their relative need indices.
-        \n\nPlease note that the section of the tool shown in Figure 3 below will only display data for the selected place (see step a below) and for the year selected in the sidebar (step 1a above).  If the version of the tool you are using contains multiple years of data, you can switch between them for the selected place by changing the year selected in the sidebar.
+        \n\nPlease note that the section of the tool shown in Figure 3 below will only display data for the selected place (see step 2a below) and for the year selected in the sidebar (step 1a above).  If the version of the tool you are using contains multiple years of data, you can switch between them for the selected place by changing the year selected in the sidebar.
     """)
-    st.image("images/PBTFAQ3.png", caption="Figure 3: A screenshot showing the main area of the Place Based Tool and identifying the various components of the page.", width=533)
+    st.image("images/PBTFAQ2.png", caption="Figure 2: A screenshot showing the main area of the Place Based Tool and identifying the various components of the page.", width=533)
     st.markdown("""
-        **3a)** Once you have created a new place, the place name will become available in the main page dropdown menu. If you create multiple places, you can switch between them here. The place you select in this dropdown is the active place, and while it is active (i.e. you have it selected) the page elements 2b, 2c, 2d, and 2e will all refer to the active place.
-        \n\n**3b)** If you want to remove the active place completely, click the button “Delete current selection”. If you delete all of your saved places, the app will return to the default place shown in Figure 1.
-        \n\n**3c)** The map feature provides a helpful check on the geography and relative locations of the selected GP practices. This is useful to check that you included those GP practices in your defined place that you intended.
-        \n\n**3d)** This box identifies the time period for the data being displayed.
-        \n\n**3e)** This box lists the GP practices that make up the active year and place you selected in steps 1a and 3a. This information is here to also help you check whether you have the desired GP practices in your defined place.
-        \n\n**3f)** The dashboard provides the relative need indices for the active year and place you selected under steps 1a and 3a. These are the combined need indices for the GP practices that make up the active place selected.
+        **2a)** Once you have created a new place, the place name will become available in the main page dropdown menu. If you create multiple places, you can switch between them here. The place you select in this dropdown is the active place, and while it is active (i.e. you have it selected) the page elements 2b, 2c, 2d, and 2e will all refer to the active place.
+        \n\n**2b)** If you want to remove the active place completely, click the button “Delete current selection”. If you delete all of your saved places, the app will return to the default place shown in Figure 1.
+        \n\n**2c)** The map feature provides a helpful check on the geography and relative locations of the selected GP practices. This is useful to check that you included those GP practices in your defined place that you intended.
+        \n\n**2d)** This box identifies the time period for the data being displayed.
+        \n\n**2e)** This box lists the GP practices that make up the active year and place you selected in steps 1a and 3a. This information is here to also help you check whether you have the desired GP practices in your defined place.
+        \n\n**2f)** The dashboard provides the relative need indices for the active year and place you selected under steps 1a and 3a. These are the combined need indices for the GP practices that make up the active place selected.
     """)
     
 with st.expander("How do I download my saved places data?"):
     st.markdown("""
         You can download the results for the places you created. This requires some user input in the main body of the tool, on the right-hand side.
     """)
-    st.image("images/PBTFAQ4.png", caption="Figure 4: A screenshot of the Download Data and preview sections of the Place Based Tool.")
+    st.image("images/PBTFAQ3.png", caption="Figure 3: A screenshot of the Download Data and preview sections of the Place Based Tool.")
     st.markdown("""
-        **4a)** Scroll down below the “Relative Need Index” to “Download Data”. Here you can preview the data download by ensuring the box “Preview data download” is ticked (this is ticked by default).
-        \n\n**4b)** This section provides a preview of the data download. It includes the GP practices populations, weighted populations and need indices for all components, for the created places. It also includes this data for the ICB in which the places are located.
+        **3a)** Scroll down below the “Relative Need Index” to “Download Data”. Here you can preview the data download by ensuring the box “Preview data download” is ticked (this is ticked by default).
+        \n\n**3b)** This section provides a preview of the data download. It includes the GP practices populations, weighted populations and need indices for all components, for the created places. It also includes this data for the ICB in which the places are located.
         \n\n***Please Note:** The ICB need indices are not comparable with the need indices of the created places. The former is relative to national need, while the place need indices are relative to ICB need.*
-        \n\n**4c)** To download the data, click “Download ZIP”. A date-stamped ZIP file will then be downloaded into your default download folder and contains the following items:
+        \n\n**3c)** To download the data, click “Download ZIP”. A date-stamped ZIP file will then be downloaded into your default download folder and contains the following items:
     """)
     st.markdown("""
-        - 'ICB allocation calculations.csv': The data you previewed under step 4b in a Comma Separated Value (.csv) file which can be opened as a table in Microsoft Excel.  If there are multiple years of data available in the tool, this download file will include each year in a separate tab.
-        - 'ICB allocation tool configuration file.json': A JavaScript Object Notation (JSON) file which can be used to re-upload your saved places into the tool at another time and return to the session you just downloaded. This is useful if you have defined many different places and want to come back to these places without having to redefine them. More information on this can be found in Step 4 of *How do I save and return to my session?*, below.
+        - 'ICB allocation calculations.csv': The data you previewed under step 3b in a Comma Separated Value (.csv) file which can be opened as a table in Microsoft Excel.  If there are multiple years of data available in the tool, this download file will include each year in a separate tab.
+        - 'ICB allocation tool configuration file.json': A JavaScript Object Notation (JSON) file which can be used to re-upload your saved places into the tool at another time and return to the session you just downloaded. This is useful if you have defined many different places and want to come back to these places without having to redefine them. More information on this can be found in *How do I save and return to my session?*, below.
         - 'ICB allocation tool documentation.txt': A plain text file with reference information on the AIF Place Based Tool, including a link to NHS England’s GitHub<sup>1</sup> repository from which the tool runs on the Streamlit<sup>2</sup> app. The GitHub repository provides further technical information on the tool.
     """, unsafe_allow_html=True)
     st.caption("""
@@ -190,24 +191,24 @@ with st.expander("How do I download my saved places data?"):
 
 with st.expander("How do I save and return to my session?"):
     st.markdown("""
-        To be able to return to your session you will need the .json file described under step 4c of the “How do I download my saved places data?” section above. Alternatively, you are also able to download the .json file without downloading the full .zip, as detailed in step 5b below.
+        To be able to return to your session you will need the .json file described under step 3c of the “How do I download my saved places data?” section above. Alternatively, you are also able to download the .json file without downloading the full .zip, as detailed in step 4b below.
         \n\nYou can return to a previous session for which you downloaded result using the .json file in the .zip you downloaded, as follows:
     """)
     col1, col2 = st.columns(2)
 
     with col1:
-        st.image("images/PBTFAQ5.png", caption="Figure 5: A screenshot showing the advanced options and session data download options in the Place Based Tool's sidebar.")
+        st.image("images/PBTFAQ4.png", caption="Figure 4: A screenshot showing the advanced options and session data download options in the Place Based Tool's sidebar.")
 
     with col2:
         st.markdown("""
-            **5a)** On the left-hand side of the tool, below the “Save Place” button, tick “Advanced Options”.
-            \n\n**5b)** The new menu that appears and has a button called “Download session data as JSON”. Click this to download just the .json save file to return to later, if you don’t want to download the full .zip file.
-            \n\n**5c)** From the menu that appears, click “Browse files” and use the new window to find the file location of the .json file from a previous session that you would like to reload in the tool. Alternatively, simply drag and drop the .json save file where the tool indicates “Drag and drop file here”.
+            **4a)** On the left-hand side of the tool, below the “Save Place” button, tick “Advanced Options”.
+            \n\n**4b)** The new menu that appears and has a button called “Download session data as JSON”. Click this to download just the .json save file to return to later, if you don’t want to download the full .zip file.
+            \n\n**4c)** From the menu that appears, click “Browse files” and use the new window to find the file location of the .json file from a previous session that you would like to reload in the tool. Alternatively, simply drag and drop the .json save file where the tool indicates “Drag and drop file here”.
             """)
     
     st.markdown("""
             Click “Submit” to reload the session. You should now see the saved places in the selection box at the top of the page. You can now add or delete any of your saved places if you wish.
-            \n\n**5d)** You can also see the current session data (that will be downloaded in step 5b by clicking the “Show Session Data” button under the Advanced Options. This session data will then be printed out at the bottom of the main page as long as this check box is ticked.
+            \n\n**4d)** You can also see the current session data (that will be downloaded in step 4b by clicking the “Show Session Data” button under the Advanced Options. This session data will then be printed out at the bottom of the main page as long as this check box is ticked.
             """)
 
 with st.expander("How do I interpret the weighted populations and need indices in the csv I downloaded?"):
@@ -230,12 +231,8 @@ with st.expander("Why does the GP practice level need index in the Place-based t
 with st.expander("How do individual components relate to the overall Core and Primary Medical Care indices?"):
     st.markdown("""
         For relative weighting of components, please see Annex J (Overall weighted populations) and K (Primary care) available from our website https://www.england.nhs.uk/allocations/.
-        \n\nPlease note that the weighted populations and need indices for the individual, or sub-components, that make up the Core index are based on our models that predict need for these specific services and do not include cost adjustments. The Other primary care services component in Core is based on the same model as the Primary medical care need component in Primary Medical Care. However, the Other primary care services in Core is not cost-adjusted for the Market Forces Factor (MFF). The Primary medical care need component in Primary Medical Care is adjusted for MFF.
-        \n\nThe weighted populations and need indices for the overall Core and Primary Medical Care indices do include some cost adjustments, as follows:
-    """, unsafe_allow_html=True)
-    st.markdown("""
-        - Overall Core is adjusted for MFF, an adjustment for unavoidable costs of remoteness, and an adjustment for excess finance cost of the private finance initiative (PFI).
-        - Primary Medical Care is adjusted for MFF.
+        \n\nPlease note that the weighted populations and need indices for the individual, or sub-components, that make up the Core index are based on our models that predict need for these specific services and do not include cost adjustments. The Primary Medical Care in Core component is based on the same model as the Primary medical care need component in Primary Medical Care. The Primary Medical Care in Core element covers Other primary care services (not relating to pharmaceutical, opthalmic, and dental services), NHS 111, and out of hours services.
+        \n\nThe weighted populations and need indices for the overall Core and Primary Medical Care indices do include some cost adjustments. Overall Core is adjusted for MFF, an adjustment for unavoidable costs of remoteness, and an adjustment for excess finance cost of the private finance initiative (PFI).
     """, unsafe_allow_html=True)
     st.markdown("""
         More information on these adjustments can be found in our Technical Guide, also available from our website https://www.england.nhs.uk/allocations/.
@@ -262,7 +259,7 @@ with st.expander("Where can I learn more about the data and methodology underpin
         - It then covers our technical guide to the allocations, which described the methodology (header: Technical guide to ICB allocations).
         - The guide is followed by the Annexes (header: Supporting spreadsheets for allocations). The Place-based tool uses the data in these Annexes (but applies a different calculation to derive need indices).
         - The Annexes are followed by supporting tools (header: Supporting tools for allocations), including the Place-based tool, but also an Infographics guide.
-        - The tools are followed by a list of background materials (header: Background materials) is provided that also cover in-depth reports on the methodologies for the different service elements, by the year that those methodologies were last updated.
+        - The tools are followed by a list of background materials (header: Background materials) that also cover in-depth reports on the methodologies for the different service elements, by the year that those methodologies were last updated.
         - Finally, the site covers some ACRA papers that provide insights into how the Committee steers the development of methodologies, ACRA recommendation letters, and further reading of external papers that pertain to the resource allocation methodology (headers: ACRA recommendation letters and papers; Further reading).
     """, unsafe_allow_html=True)
 
