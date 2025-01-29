@@ -1,5 +1,5 @@
 #Sets the allocation year that is used to populate dashboard titles
-allocations_year = '2023/24 and 2024/25'
+allocations_year = '2025/26'
 
 #Sets the relative component weighting values displayed on the main page
 [[relativeweightings]]

@@ -24,6 +24,7 @@ import zipfile
 import regex as re
 from datetime import datetime
 import os
+from pathlib import Path
 
 # local
 import utils
@@ -149,8 +150,14 @@ svg = """
 """
 render_svg(svg)
 
-st.title("ICB Place Based Allocation Tool 2023/24 and 2024/25")
-st.markdown("Last Updated 17th January 2023")
+st.title("ICB Place Based Allocation Tool " + config['allocations_year'] + " FAQs")
+
+#Code below uses the date of last modification for the file to create a last updated date.
+script_path = Path(__file__)
+last_modified_time = script_path.stat().st_mtime
+last_modified_date = time.localtime(last_modified_time)
+formatted_date = time.strftime('%d %B %Y', last_modified_date)
+st.write(f"Last updated: {formatted_date}")
 
 # SIDEBAR Prologue (have to run before loading data)
 # -------------------------------------------------------------------------
