@@ -523,8 +523,6 @@ metric_cols = [
     "Community Index",
     "Mental Health Index",
     "Maternity Index",
-    "Prescribing Index",
-    "Health Inequalities Index",
 ]
 
 metric_names = [
@@ -532,7 +530,17 @@ metric_names = [
     "Community*",
     "Mental Health",
     "Maternity",
+]
+
+metric_cols2 = [
+    "Prescribing Index",
+    "Primary Medical Care Need Index",
+    "Health Inequalities Index",
+]
+
+metric_names2 = [
     "Prescribing",
+    "Primary Medical in Core",
     "Health Inequals",
 ]
 
@@ -550,6 +558,18 @@ with st.expander("Core Sub Indices", expanded  = True):
         )
         place_metric = "{:.2f}".format(place_metric)
         cols[metric_cols.index(metric)].metric(
+            name,
+            place_metric,  # icb_metric, delta_color="inverse"
+        )
+
+    cols = st.columns(len(metric_cols2)+1)
+    for metric, name in zip(metric_cols2, metric_names2):
+        place_metric, icb_metric = metric_calcs(
+            df,
+            metric,
+        )
+        place_metric = "{:.2f}".format(place_metric)
+        cols[metric_cols2.index(metric)].metric(
             name,
             place_metric,  # icb_metric, delta_color="inverse"
         )
