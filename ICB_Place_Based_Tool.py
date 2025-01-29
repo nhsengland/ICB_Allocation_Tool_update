@@ -64,10 +64,10 @@ st.markdown(
 if len(st.session_state) < 1:
     st.session_state["Default Place"] = {
         "gps": [
-            "B85005: Shepley Health Centre",
-            "B85022: Honley Surgery",
-            "B85061: Skelmanthorpe Family Doctors",
-            "B85026: Kirkburton Health Centre",
+            "B85005: SHEPLEY HEALTH CENTRE",
+            "B85022: HONLEY SURGERY",
+            "B85061: SKELMANTHORPE FAMILY DOCTORS",
+            "B85026: KIRKBURTON HEALTH CENTRE",
         ],
         "icb": "NHS West Yorkshire ICB"
     }
