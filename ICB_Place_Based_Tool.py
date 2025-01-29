@@ -583,7 +583,7 @@ with st.expander("Relative Weighting of Components"):
     #     value = metric['value']
     #     col.metric(header, f"{value:.2f}")
     st.markdown(
-        """The relative weighting applied to each of these components are provided in Workbook J.  These weightings are based on forecast estimated expenditure in 2025/26.
+        """The relative weighting applied to each of these components are provided in Workbook J.  These weightings are based on modelled estimated expenditure in 2025/26.
         \n\nThese are combined by first applying relative weightings to Hospital and Community Health Service (HCHS) components (G&A, Community Services, Mental Health, and Maternity).  The HCHS weighted population is then combined with Prescribing and Primary Medical in Core.  This new total is then weighted by the Health Inequalities adjustment.
         \n\nThese relative weightings apply nationally and do not take into consideration need for variation of weights at the local level.  ICBs are advised to consider using their own weightings so these are more responsive to their system need and strategy.
         """)
