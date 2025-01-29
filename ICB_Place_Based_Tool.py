@@ -635,7 +635,7 @@ if print_table:
 # CSV Header content
 csv_header1 = "PLEASE READ: Below you can find the results for the places you created, and for the ICB they belong to, for the year you selected."
 csv_header2 = "Note that the need indices for the places are relative to the ICB (where the ICBs need index = 1.00), while the need index for the ICB is relative to national need (where the national need index = 1.00)."
-csv_header3 = "This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the user guide available from https://www.england.nhs.uk/allocations/."
+csv_header3 = "This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the FAQ tab available in the tool."
 csv_header4 = ""
 
 
