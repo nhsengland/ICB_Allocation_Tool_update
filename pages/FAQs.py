@@ -278,7 +278,7 @@ with st.expander("I have another question. How can I contact you?"):
 with st.expander("Further information"):
     st.markdown("""
         Further information in support of the tool can be found in the NHS England GitHub repository docs folder: 
-        \n\n REPOSITORY LINK HERE
+        \n\n https://github.com/nhsengland/ICB_Allocation_Tool_update
         \n\nThis includes this user guide and a readme file with other useful information regarding this tool 
-        \n\nREADME LINK HERE
+        \n\nhttps://github.com/nhsengland/ICB_Allocation_Tool_update/blob/main/README.md
     """)
