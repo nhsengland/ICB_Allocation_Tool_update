@@ -666,7 +666,7 @@ session_state_dump = json.dumps(session_state_dict, indent=4, sort_keys=False)
 # Create a ZIP file containing the Excel file, documentation, and configuration
 zip_buffer = io.BytesIO()
 with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
-    zip_file.writestr(f"ICB allocation calculations {selected_year}.xlsx", excel_buffer.getvalue())
+    zip_file.writestr(f"ICB allocation calculations.xlsx", excel_buffer.getvalue())
     zip_file.writestr("ICB allocation tool documentation.txt", readme_text.getvalue())
     zip_file.writestr("ICB allocation tool configuration file.json", session_state_dump)
 
