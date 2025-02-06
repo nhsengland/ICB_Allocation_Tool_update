@@ -6,7 +6,7 @@ This project is a tool built in Python to assist Integrated Care Boards (ICBs) t
 
 The tool allows a new 'place' to be defined in an ICB as a cluster of GP practices. This allows place to be flexibly defined, whether that is as GP practices in the same Primary Care Network (PCN), Local Authority, or that feed into the same Secondary services for example. That is at the discretion of the ICB. Once GP practices have been allocated to a place, the relative need indices can be calculated and the output can be downloaded as a CSV.
 
-![ICB Place Based Allocation Tool](/docs/screenshot-min.png?raw=true "ICB Place Based Allocation Tool")
+![ICB Place Based Allocation Tool](/images/ReadMe-Screenshot.png?raw=true "ICB Place Based Allocation Tool")
 
 ## Deployment (local)
 
