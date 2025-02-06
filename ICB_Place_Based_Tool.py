@@ -35,9 +35,8 @@ from streamlit_folium import folium_static
 import folium
 import toml
 
-#Config setup for Relative Component Weightings
+#Config file setup
 config = toml.load('config.toml')
-relativeweightings = config['relativeweightings']
 
 st.set_page_config(
     page_title="ICB Place Based Allocation Tool",
@@ -540,7 +539,7 @@ metric_cols2 = [
 
 metric_names2 = [
     "Prescribing",
-    "Primary Medical in Core",
+    "Primary Medical in Core**",
     "Health Inequals",
 ]
 
@@ -576,12 +575,10 @@ with st.expander("Core Sub Indices", expanded  = True):
 
 #Component Relative Weighting
 with st.expander("Relative Weighting of Components"):
-    num_columns = len(relativeweightings)
-    cols = st.columns(num_columns)
-    for col, metric in zip(cols, relativeweightings):
-        header = metric['header']
-        value = metric['value']
-        col.metric(header, f"{value:.2f}")
+    st.markdown(
+        """The relative weighting applied to each of these components are provided in Workbook J.  These weightings are based on modelled estimated expenditure in 2025/26.
+        \n\nThese relative weightings are based on national modelled expenditure, and do not take into consideration variation of weights at the local level.  It is not appropriate to apply these weights to place-level indices that are relative to the ICB, not England.
+        """)
 
 #Primary Care Index
 #Core Index
@@ -591,13 +588,13 @@ metric_cols = [
 ]
 
 metric_names = [
-    "Primary Medical Care Need***",
+    "Primary Medical Care Need****",
     "Health Inequals",
 ]
 place_metric, icb_metric = metric_calcs(df, "Primary Medical Care Index")
 place_metric = "{:.2f}".format(place_metric)
 st.header("Primary Medical Care Index: " + str(place_metric))
-st.caption("Based on weighted populations from the formula for ICB allocations, not the global sum weighted populations**")
+st.caption("Based on weighted populations from the formula for ICB allocations, not the global sum weighted populations***")
 
 with st.expander("Primary Medical Care Sub Indices", expanded  = True):
 
@@ -669,7 +666,7 @@ session_state_dump = json.dumps(session_state_dict, indent=4, sort_keys=False)
 # Create a ZIP file containing the Excel file, documentation, and configuration
 zip_buffer = io.BytesIO()
 with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
-    zip_file.writestr(f"ICB allocation calculations {selected_year}.xlsx", excel_buffer.getvalue())
+    zip_file.writestr(f"ICB allocation calculations.xlsx", excel_buffer.getvalue())
     zip_file.writestr("ICB allocation tool documentation.txt", readme_text.getvalue())
     zip_file.writestr("ICB allocation tool configuration file.json", session_state_dump)
 
@@ -684,10 +681,24 @@ btn = st.download_button(
     mime="application/zip",
 )
 
+with st.expander("Notes"):
+    st.markdown(
+        "*The Community Services index relates to the half of Community Services that are similarly distributed to district nursing. The published Community Services target allocation is calculated using the Community Services model. This covers 50% of Community Services. The other 50% is distributed through the General & Acute model."
+    )
+    st.markdown("")
+    st.markdown(
+        "**The Primary Medical Care in Core element covers Other primary care services (not relating to pharmaceutical, opthalmic, and dental services), NHS 111, and out of hours services."
+        )
+    st.markdown("")
+    st.markdown(
+        "***The global sum weighted populations are calculated using the Carr-Hill formula. The global sum weighted populations are a key component of payments to GP practices under the GMS contract. Funding GP practices is part of ICB’s commissioning responsibilities."
+        )
+    st.markdown("")
+    st.markdown(
+        "****The Primary Medical Care Need Indices will not include the dispensing doctors adjustment – this is applied at ICB level."
+        )
 
-st.subheader("Help and Support")
-with st.expander("About the ICB Place Based Allocation Tool"):
-    st.subheader("Allocations")
+with st.expander("About the ICB Place Based Tool"):
     st.markdown(
         "This tool is designed to support allocation at places by allowing places to be defined by aggregating GP Practices within an ICB. Please refer to the User Guide for instructions."
     )
@@ -705,18 +716,7 @@ with st.expander("About the ICB Place Based Allocation Tool"):
     st.markdown(
         "More information on the latest allocations, including contact details, can be found [here](https://www.england.nhs.uk/allocations/)."
     )
-    st.subheader("Caveats and Notes")
-    st.markdown(
-        "*The Community Services index relates to the half of Community Services that are similarly distributed to district nursing. The published Community Services target allocation is calculated using the Community Services model. This covers 50% of Community Services. The other 50% is distributed through the General & Acute model."
-    )
-    st.markdown("")
-    st.markdown(
-        "**The global sum weighted populations are calculated using the Carr-Hill formula. The global sum weighted populations are a key component of payments to GP practices under the GMS contract. Funding GP practices is part of ICB’s commissioning responsibilities."
-        )
-    st.markdown("")
-    st.markdown(
-        "***The Primary Medical Care Need Indices will not include the dispensing doctors adjustment – this is applied at ICB level."
-        )        
+
 st.info(
     "For support with using the AIF Allocation tool please email: [england.revenue-allocations@nhs.net](mailto:england.revenue-allocations@nhs.net)"
 )
