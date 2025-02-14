@@ -24,6 +24,7 @@ import zipfile
 import regex as re
 from datetime import datetime
 import os
+from pathlib import Path
 
 # local
 import utils
@@ -148,8 +149,14 @@ svg = """
 """
 render_svg(svg)
 
-st.title("ICB Place Based Allocation Tool 2023/24 and 2024/25")
-st.markdown("Last Updated 17th January 2023")
+st.title("ICB Place Based Allocation Tool " + config['allocations_year'] + " FAQs")
+
+#Code below uses the date of last modification for the file to create a last updated date.
+script_path = Path(__file__)
+last_modified_time = script_path.stat().st_mtime
+last_modified_date = time.localtime(last_modified_time)
+formatted_date = time.strftime('%d %B %Y', last_modified_date)
+st.write(f"Last updated: {formatted_date}")
 
 # SIDEBAR Prologue (have to run before loading data)
 # -------------------------------------------------------------------------
@@ -625,7 +632,7 @@ if print_table:
 # CSV Header content
 csv_header1 = "PLEASE READ: Below you can find the results for the places you created, and for the ICB they belong to, for the year you selected."
 csv_header2 = "Note that the need indices for the places are relative to the ICB (where the ICBs need index = 1.00), while the need index for the ICB is relative to national need (where the national need index = 1.00)."
-csv_header3 = "This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the user guide available from https://www.england.nhs.uk/allocations/."
+csv_header3 = "This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the FAQ tab available in the tool."
 csv_header4 = ""
 
 
