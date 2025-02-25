@@ -69,7 +69,7 @@ if len(st.session_state) < 1:
             "B85061: SKELMANTHORPE FAMILY DOCTORS",
             "B85026: KIRKBURTON HEALTH CENTRE",
         ],
-        "icb": "West Yorkshire ICB"
+        "icb": "NHS West Yorkshire ICB"
     }
 if "places" not in st.session_state:
     st.session_state.places = ["Default Place"]
@@ -157,6 +157,8 @@ last_modified_time = script_path.stat().st_mtime
 last_modified_date = time.localtime(last_modified_time)
 formatted_date = time.strftime('%d %B %Y', last_modified_date)
 st.write(f"Last updated: {formatted_date}")
+
+st.markdown("### **Please be aware this tool is in a draft state and should not currently be used.**")
 
 # SIDEBAR Prologue (have to run before loading data)
 # -------------------------------------------------------------------------
@@ -368,7 +370,7 @@ if delete_place:
                     "B85061: SKELMANTHORPE FAMILY DOCTORS",
                     "B85026: KIRKBURTON HEALTH CENTRE",
                 ],
-                "icb": "West Yorkshire ICB"
+                "icb": "NHS West Yorkshire ICB"
             }
         if "places" not in st.session_state:
             st.session_state.places = ["Default Place"]
@@ -380,7 +382,7 @@ if delete_place:
                     "B85061: SKELMANTHORPE FAMILY DOCTORS",
                     "B85026: KIRKBURTON HEALTH CENTRE",
                 ],
-                "icb": "West Yorkshire ICB"
+                "icb": "NHS West Yorkshire ICB"
             }
         st.session_state.places = ["Default Place"]
         st.session_state.after = "Default Place"
