@@ -64,10 +64,10 @@ st.markdown(
 if len(st.session_state) < 1:
     st.session_state["Default Place"] = {
         "gps": [
-            "B85005: Shepley Health Centre",
-            "B85022: Honley Surgery",
-            "B85061: Skelmanthorpe Family Doctors",
-            "B85026: Kirkburton Health Centre",
+            "B85005: SHEPLEY PRIMARY CARE LIMITED",
+            "B85022: HONLEY SURGERY",
+            "B85061: SKELMANTHORPE FAMILY DOCTORS",
+            "B85026: KIRKBURTON HEALTH CENTRE",
         ],
         "icb": "NHS West Yorkshire ICB"
     }
@@ -157,6 +157,8 @@ last_modified_time = script_path.stat().st_mtime
 last_modified_date = time.localtime(last_modified_time)
 formatted_date = time.strftime('%d %B %Y', last_modified_date)
 st.write(f"Last updated: {formatted_date}")
+
+st.markdown("### **Please be aware this tool is in a draft state and should not currently be used.**")
 
 # SIDEBAR Prologue (have to run before loading data)
 # -------------------------------------------------------------------------
@@ -363,10 +365,10 @@ if delete_place:
         if "Default Group" not in st.session_state:
             st.session_state["Default Place"] = {
                 "gps": [
-                    "B85005: Shepley Health Centre",
-                    "B85022: Honley Surgery",
-                    "B85061: Skelmanthorpe Family Doctors",
-                    "B85026: Kirkburton Health Centre",
+                    "B85005: SHEPLEY PRIMARY CARE LIMITED",
+                    "B85022: HONLEY SURGERY",
+                    "B85061: SKELMANTHORPE FAMILY DOCTORS",
+                    "B85026: KIRKBURTON HEALTH CENTRE",
                 ],
                 "icb": "NHS West Yorkshire ICB"
             }
@@ -375,10 +377,10 @@ if delete_place:
         else:
             st.session_state["Default Place"] = {
                 "gps": [
-                    "B85005: Shepley Health Centre",
-                    "B85022: Honley Surgery",
-                    "B85061: Skelmanthorpe Family Doctors",
-                    "B85026: Kirkburton Health Centre",
+                    "B85005: SHEPLEY PRIMARY CARE LIMITED",
+                    "B85022: HONLEY SURGERY",
+                    "B85061: SKELMANTHORPE FAMILY DOCTORS",
+                    "B85026: KIRKBURTON HEALTH CENTRE",
                 ],
                 "icb": "NHS West Yorkshire ICB"
             }
