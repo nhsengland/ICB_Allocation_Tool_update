@@ -149,7 +149,7 @@ svg = """
 """
 render_svg(svg)
 
-st.title("ICB Place Based Allocation Tool " + config['allocations_year'] + " FAQs")
+st.title("ICB Place Based Allocation Tool " + config['allocations_year'])
 
 #Code below uses the date of last modification for the file to create a last updated date.
 script_path = Path(__file__)
