@@ -79,7 +79,7 @@ def write_table(data):
     gridOptions['suppressRowVirtualisation'] = True  # Disable row virtualization to avoid pagination rendering
     
     # Display the table with AgGrid
-    return AgGrid(data, gridOptions=gridOptions, height=400, enable_enterprise_modules=True)
+    return AgGrid(data, gridOptions=gridOptions, height=400, enable_enterprise_modules=False)
 
 
 def write_headers(sheet, *csv_headers):
