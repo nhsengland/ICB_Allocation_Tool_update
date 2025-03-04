@@ -422,7 +422,8 @@ lat = []
 long = []
 
 for gp in group_gp_list:
-    if ~dataset_dict[selected_year]["practice_display"].str.contains(gp).any():
+    escaped_gp = re.escape(gp)
+    if ~dataset_dict[selected_year]["practice_display"].str.contains(escaped_gp).any():
         st.write(f"{gp} is not available in this time period")
         continue
     latitude = dataset_dict[selected_year]["Latitude"].loc[dataset_dict[selected_year]["practice_display"] == gp].item()
