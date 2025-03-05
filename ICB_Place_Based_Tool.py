@@ -239,14 +239,19 @@ with st.sidebar.expander("Select GP Practice(s)", expanded=False):
     with col1:
         if st.button("Select all"):
             practice_list_to_select['tick'] = True
+            st.session_state.practice_list = practice_list_to_select.copy() #Store in session state
 
     with col2:
         if st.button("Deselect all"):
             practice_list_to_select['tick'] = False
+            st.session_state.practice_list = practice_list_to_select.copy() #Store in session state
+
+    if 'practice_list' not in st.session_state:
+        st.session_state.practice_list = practice_list_to_select.copy()
 
     # Practice choice table
     practice_choice = st.data_editor(
-        practice_list_to_select,
+        st.session_state.practice_list,
         column_config={
             "tick": st.column_config.CheckboxColumn("Select", default=False)
         },
@@ -255,7 +260,6 @@ with st.sidebar.expander("Select GP Practice(s)", expanded=False):
 
 # Get selected practices
 selected_practices = practice_choice[practice_choice['tick']]["GP Practice"].tolist()
-
 
 place_name = st.sidebar.text_input(
     "Name your Place",
