@@ -67,19 +67,15 @@ def get_sidebar(data):
 def write_table(data):
     # Create grid options to pin the first column
     gb = GridOptionsBuilder.from_dataframe(data)
-    gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc='sum', editable=True)
-    
+
     # Freeze the first column (index 0)
     gb.configure_column(list(data.columns)[0], pinned='left')
     
-    # Remove pagination and bottom panel
+    # Build the gridOptions dictionary
     gridOptions = gb.build()
-    gridOptions['pagination'] = False  # Disable pagination
-    gridOptions['suppressPaginationPanel'] = True  # Hide pagination controls
-    gridOptions['suppressRowVirtualisation'] = True  # Disable row virtualization to avoid pagination rendering
     
     # Display the table with AgGrid
-    return AgGrid(data, gridOptions=gridOptions, height=400, enable_enterprise_modules=True)
+    return AgGrid(data, gridOptions=gridOptions)
 
 
 def write_headers(sheet, *csv_headers):
