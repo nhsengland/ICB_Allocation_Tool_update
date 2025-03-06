@@ -44,7 +44,7 @@ def get_data(path):
 
         }
     )
-    df = df.fillna(1).replace(0, 1)
+    df = df.fillna(0)
     df["practice_display"] = df["GP Practice code"] + ": " + df["GP Practice name"]
     return df
 
