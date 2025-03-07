@@ -215,8 +215,8 @@ def get_data_for_all_years(dataset_dict, session_state, aggregations, index_nume
         large_df = pd.concat(flat_list, ignore_index=True)
 
         # Rounding the data here, after calculations are done to maintain accuracy - numerators and indices are rounded differently
-        large_df[index_numerator + ["GP pop"]] = large_df[index_numerator + ["GP pop"]].applymap(lambda x: excel_round(x, 1))
-        large_df[index_names] = large_df[index_names].applymap(lambda x: excel_round(x, 0.001))
+        large_df[index_numerator + ["GP pop"]] = large_df[index_numerator + ["GP pop"]].map(lambda x: excel_round(x, 1))
+        large_df[index_names] = large_df[index_names].map(lambda x: excel_round(x, 0.001))
 
         dataset_dict[filename] = large_df
 
