@@ -194,72 +194,74 @@ st.sidebar.subheader("Create New Place")
 with st.sidebar.expander("Select an ICB", expanded=True):
     icb_choice = st.selectbox("Select an ICB from the drop-down", icb, help="Select an ICB", label_visibility="hidden")
 
-# Generate the list of LADs based on ICB selection
-lad = dataset_dict[selected_year]["LA District name"].loc[
-    dataset_dict[selected_year]["ICB name"] == icb_choice
-].unique().tolist()
-
-# Create a DataFrame for the LADs with a 'tick' column
-lad_list_to_select = pd.DataFrame(lad, columns=['Local Authority District'])
-lad_list_to_select['tick'] = False
-
-# Use st.expander to maintain state for LAD filter
-with st.sidebar.expander('Select Local Authority District(s)', expanded=False):
-    lad_choice = st.data_editor(
-        lad_list_to_select,
-        column_config={
-            "tick": st.column_config.CheckboxColumn("Select", default=False)
-        },
-        hide_index=True
-    )
-    
-    selected_lads = lad_choice[lad_choice['tick']]["Local Authority District"].tolist()
-
-# Filter practices based on selected ICB and LADs
-if not selected_lads:
-    filtered_practices = dataset_dict[selected_year]["practice_display"].loc[
+    # Generate the list of LADs based on ICB selection
+    lad = dataset_dict[selected_year]["LA District name"].loc[
         dataset_dict[selected_year]["ICB name"] == icb_choice
     ].unique().tolist()
-else:
-    filtered_practices = dataset_dict[selected_year]["practice_display"].loc[
-        (dataset_dict[selected_year]["LA District name"].isin(selected_lads)) & 
-        (dataset_dict[selected_year]["ICB name"] == icb_choice)
-    ].unique().tolist()
 
-# Create DataFrame for GP practices with a 'tick' column
-practice_list_to_select = pd.DataFrame(filtered_practices, columns=['GP Practice'])
-practice_list_to_select['tick'] = False
+    # Create a DataFrame for the LADs with a 'tick' column
+    lad_list_to_select = pd.DataFrame(lad, columns=['Local Authority District'])
+    lad_list_to_select['tick'] = False
 
-# Sidebar for GP Practice filter
-with st.sidebar.expander("Select GP Practice(s)", expanded=False):
-    # Create three columns for the buttons with reduced width
-    col1, col2, col3 = st.columns([1.1, 1.3, 2.2])
+    # Use st.expander to maintain state for LAD filter
+    with st.sidebar.expander('Select Local Authority District(s)', expanded=False):
+        lad_choice = st.data_editor(
+            lad_list_to_select,
+            column_config={
+                "tick": st.column_config.CheckboxColumn("Select", default=False)
+            },
+            hide_index=True
+        )
 
-    # Place buttons in separate columns
-    with col1:
-        if st.button("Select all"):
-            practice_list_to_select['tick'] = True
-            st.session_state.practice_list = practice_list_to_select.copy() #Store in session state
+        selected_lads = lad_choice[lad_choice['tick']]["Local Authority District"].tolist()
 
-    with col2:
-        if st.button("Deselect all"):
-            practice_list_to_select['tick'] = False
-            st.session_state.practice_list = practice_list_to_select.copy() #Store in session state
+    # Filter practices based on selected ICB and LADs
+    if not selected_lads:
+        filtered_practices = dataset_dict[selected_year]["practice_display"].loc[
+            dataset_dict[selected_year]["ICB name"] == icb_choice
+        ].unique().tolist()
+    else:
+        filtered_practices = dataset_dict[selected_year]["practice_display"].loc[
+            (dataset_dict[selected_year]["LA District name"].isin(selected_lads)) &
+            (dataset_dict[selected_year]["ICB name"] == icb_choice)
+        ].unique().tolist()
 
-    if 'practice_list' not in st.session_state:
-        st.session_state.practice_list = practice_list_to_select.copy()
+    # Create DataFrame for GP practices with a 'tick' column
+    practice_list_to_select = pd.DataFrame(filtered_practices, columns=['GP Practice'])
+    practice_list_to_select['tick'] = False
 
-    # Practice choice table
-    practice_choice = st.data_editor(
-        st.session_state.practice_list,
-        column_config={
-            "tick": st.column_config.CheckboxColumn("Select", default=False)
-        },
-        hide_index=True
-    )
+    # Sidebar for GP Practice filter
+    with st.sidebar.expander("Select GP Practice(s)", expanded=False):
+        # Create three columns for the buttons with reduced width
+        col1, col2, col3 = st.columns([1.1, 1.3, 2.2])
 
-# Get selected practices
-selected_practices = practice_choice[practice_choice['tick']]["GP Practice"].tolist()
+        # Place buttons in separate columns
+        with col1:
+            if st.button("Select all"):
+                practice_list_to_select['tick'] = True
+                st.session_state.practice_list = practice_list_to_select.copy() #Store in session state
+
+        with col2:
+            if st.button("Deselect all"):
+                practice_list_to_select['tick'] = False
+                st.session_state.practice_list = practice_list_to_select.copy() #Store in session state
+
+        if 'practice_list' not in st.session_state or st.session_state.get('last_icb_choice') != icb_choice or st.session_state.get('last_selected_lads') != selected_lads:
+            st.session_state.practice_list = practice_list_to_select.copy()
+            st.session_state['last_icb_choice'] = icb_choice
+            st.session_state['last_selected_lads'] = selected_lads
+
+        # Practice choice table
+        practice_choice = st.data_editor(
+            st.session_state.practice_list,
+            column_config={
+                "tick": st.column_config.CheckboxColumn("Select", default=False)
+            },
+            hide_index=True
+        )
+
+    # Get selected practices
+    selected_practices = practice_choice[practice_choice['tick']]["GP Practice"].tolist()
 
 place_name = st.sidebar.text_input(
     "Name your Place",
