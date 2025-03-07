@@ -246,9 +246,10 @@ with st.sidebar.expander("Select an ICB", expanded=True):
                 practice_list_to_select['tick'] = False
                 st.session_state.practice_list = practice_list_to_select.copy() #Store in session state
 
-        if 'practice_list' not in st.session_state or st.session_state.get('last_icb_choice') != icb_choice:
+        if 'practice_list' not in st.session_state or st.session_state.get('last_icb_choice') != icb_choice or st.session_state.get('last_selected_lads') != selected_lads:
             st.session_state.practice_list = practice_list_to_select.copy()
             st.session_state['last_icb_choice'] = icb_choice
+            st.session_state['last_selected_lads'] = selected_lads
 
         # Practice choice table
         practice_choice = st.data_editor(
