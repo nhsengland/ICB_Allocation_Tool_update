@@ -158,8 +158,6 @@ last_modified_date = time.localtime(last_modified_time)
 formatted_date = time.strftime('%d %B %Y', last_modified_date)
 st.write(f"Last updated: {formatted_date}")
 
-st.markdown("### **Please be aware this tool is in a draft state and should not currently be used.**")
-
 # SIDEBAR Prologue (have to run before loading data)
 # -------------------------------------------------------------------------
 # Call the function to set sidebar width
