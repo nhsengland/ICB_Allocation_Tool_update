@@ -56,11 +56,10 @@ with st.expander("What does the tool do?"):
         model.
         \n\n<b>Need indices</b> are standardised figures, which makes them more suited for comparison between areas. Need indices are calculated as follows:
     """, unsafe_allow_html=True)
-    st.latex(r'''
-        {WP_{p}/GP_{p} \over WP_{i}/GP_{i}}
-    ''')
+    st.latex(r""" (WP_p/GP_p)\over (WP_i/GP_i)""")
     st.markdown("""
-        The need indices for these places are relative to their ICB, meaning that a value of 1.00 for a component in a defined place equals the level of need of 
+        Where <i>WP</i> is the weighted population for a given need, <i>GP</i> is the GP practice population, <i>i</i> is the ICB, and <i>p</i> is the Defined Place.
+        \n\nThe need indices for these places are relative to their ICB, meaning that a value of 1.00 for a component in a defined place equals the level of need of 
         the ICB as a whole. If a place has a need index with a value below 1.00, it has a lower level of need compared to the ICB. A value above 1.00 means there is 
         a higher need in that place compared to the ICB.
         \n\nThe resource allocation model is based on anonymised NHS person-level data on their individual and area demographics, and use of NHS health services. With 
@@ -126,7 +125,7 @@ with st.expander("How do I create a place?"):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.image("images/PBTFAQ1.2.png", caption="Figure 1.2: A screenshot showing the drop-down menu to select GP practices and higlighting the Search and Fullscreen buttons."
+        st.image("images/PBTFAQ1.2.png", caption="Figure 1.2: A screenshot showing the drop-down menu to select GP practices and highlighting the Search and Fullscreen buttons."
             #, width=345
         )
 
@@ -231,7 +230,7 @@ with st.expander("Why does the GP practice level need index in the Place-based t
 with st.expander("How do individual components relate to the overall Core and Primary Medical Care indices?"):
     st.markdown("""
         For relative weighting of components, please see Annex J (Overall weighted populations) and K (Primary care) available from our website https://www.england.nhs.uk/allocations/.
-        \n\nPlease note that the weighted populations and need indices for the individual, or sub-components, that make up the Core index are based on our models that predict need for these specific services and do not include cost adjustments. The Primary Medical Care in Core component is based on the same model as the Primary medical care need component in Primary Medical Care. The Primary Medical Care in Core element covers Other primary care services (not relating to pharmaceutical, opthalmic, and dental services), NHS 111, and out of hours services.
+        \n\nPlease note that the weighted populations and need indices for the individual, or sub-components, that make up the Core index are based on our models that predict need for these specific services and do not include cost adjustments. The Primary Medical Care in Core component is based on the same model as the Primary medical care need component in Primary Medical Care. The Primary Medical Care in Core element covers Other primary care services (not relating to pharmaceutical, ophthalmic, and dental services), NHS 111, and out of hours services.
         \n\nThe weighted populations and need indices for the overall Core and Primary Medical Care indices do include some cost adjustments. Overall Core is adjusted for MFF, an adjustment for unavoidable costs of remoteness, and an adjustment for excess finance cost of the private finance initiative (PFI).
     """, unsafe_allow_html=True)
     st.markdown("""

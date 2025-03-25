@@ -697,13 +697,13 @@ btn = st.download_button(
     mime="application/zip",
 )
 
-with st.expander("Notes"):
+with st.expander("Notes", expanded = True):
     st.markdown(
         "*The Community Services index relates to the half of Community Services that are similarly distributed to district nursing. The published Community Services target allocation is calculated using the Community Services model. This covers 50% of Community Services. The other 50% is distributed through the General & Acute model."
     )
     st.markdown("")
     st.markdown(
-        "**The Primary Medical Care in Core element covers Other primary care services (not relating to pharmaceutical, opthalmic, and dental services), NHS 111, and out of hours services."
+        "**The Primary Medical Care in Core element covers Other primary care services (not relating to pharmaceutical, ophthalmic, and dental services), NHS 111, and out of hours services."
         )
     st.markdown("")
     st.markdown(
@@ -714,7 +714,7 @@ with st.expander("Notes"):
         "****The Primary Medical Care Need Indices will not include the dispensing doctors adjustment – this is applied at ICB level."
         )
 
-with st.expander("About the ICB Place Based Tool"):
+with st.expander("About the ICB Place Based Tool", expanded = True):
     st.markdown(
         "This tool is designed to support allocation at places by allowing places to be defined by aggregating GP Practices within an ICB. Please refer to the User Guide for instructions."
     )
