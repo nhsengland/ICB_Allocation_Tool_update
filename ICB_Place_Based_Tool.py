@@ -13,6 +13,7 @@ CREATED:        2021-12-14
 VERSION:        0.0.1
 """
 
+
 # Libraries
 # -------------------------------------------------------------------------
 # python
@@ -36,9 +37,13 @@ from streamlit_folium import folium_static
 import folium
 import toml
 
-#Config file setup
+
+# Page setup
+# -------------------------------------------------------------------------
+#Config file defined
 config = toml.load('config.toml')
 
+#Configure page's default Streamlit settings
 st.set_page_config(
     page_title="ICB Place Based Allocation Tool",
     page_icon="https://www.england.nhs.uk/wp-content/themes/nhsengland/static/img/favicon.ico",
@@ -59,6 +64,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
 # Set default place in session
 # -------------------------------------------------------------------------
 if len(st.session_state) < 1:
@@ -74,24 +80,27 @@ if len(st.session_state) < 1:
 if "places" not in st.session_state:
     st.session_state.places = ["Default Place"]
 
+
 # Functions & Calls
 # -------------------------------------------------------------------------
-
-
-# render svg image
+# Render an svg image
 def render_svg(svg):
     """Renders the given svg string."""
     b64 = base64.b64encode(svg.encode("utf-8")).decode("utf-8")
     html = r'<img src="data:image/svg+xml;base64,%s"/>' % b64
     st.write(html, unsafe_allow_html=True)
 
-
 # Download functionality
 @st.cache_data
 def convert_df(df):
     return df.to_csv(index=False).encode("utf-8")
 
-#Metric calcs. 
+# Create metric_calcs function
+# Fetches the specified metric from the given dataframe, and rounds it using "excel_round"
+# Then subtracts from 1 to get a relative difference, rounded using "excel_round"
+# When called below:
+## "group_need_indices" are the df created by the "get_data_for_all_years" function
+## "metric_index" the name of the column to be retrieved from the df
 def metric_calcs(group_need_indices, metric_index):
     # Convert the value to float and round it using excel_round to 2 decimal places
     place_metric = utils.excel_round(group_need_indices[metric_index][0].astype(float), 0.01)
@@ -99,7 +108,7 @@ def metric_calcs(group_need_indices, metric_index):
     icb_metric = utils.excel_round(place_metric - 1, 0.01)
     return place_metric, icb_metric
 
-
+# Create aggregations dictionary, used in get_data_for_all_years function; tells function how to aggregate each column
 aggregations = {
     "GP pop": "sum",
     "Weighted G&A pop": "sum",
@@ -113,6 +122,7 @@ aggregations = {
     "Weighted Health Inequalities pop": "sum",
 }
 
+#Create index_numerator list, used in get_data_for_all_years function; see utils file for full info
 index_numerator = [
     "Weighted G&A pop",
     "Weighted Community pop",
@@ -125,6 +135,7 @@ index_numerator = [
     "Weighted Health Inequalities pop",
 ]
 
+#Create index_names list, used in get_data_for_all_years function; see utils file for full info
 index_names = [
     "G&A Index",
     "Community Index",
@@ -134,13 +145,13 @@ index_names = [
     "Overall Core Index",
     "Primary Medical Care Index",
     "Primary Medical Care Need Index",
-    "Health Inequalities Index",
-    
+    "Health Inequalities Index",  
 ]
 
-# Markdown
+
+# Header section
 # -------------------------------------------------------------------------
-# NHS Logo
+# Render the NHS logo from SVG data
 svg = """
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 16">
             <path d="M0 0h40v16H0z" fill="#005EB8"></path>
@@ -149,71 +160,87 @@ svg = """
 """
 render_svg(svg)
 
+# Page title, calling the defined year from the config file
 st.title("ICB Place Based Allocation Tool " + config['allocations_year'])
 
-#Code below uses the date of last modification for the file to create a last updated date.
+# Last updated date line; uses the date of last modification for the file to create a last updated date
 script_path = Path(__file__)
 last_modified_time = script_path.stat().st_mtime
 last_modified_date = time.localtime(last_modified_time)
 formatted_date = time.strftime('%d %B %Y', last_modified_date)
 st.write(f"Last updated: {formatted_date}")
 
+
 # SIDEBAR Prologue (have to run before loading data)
 # -------------------------------------------------------------------------
 # Call the function to set sidebar width
 utils.set_sidebar_width(min_width=500, max_width=500)
 
+# Creates a list containing the filenames of files in the data folder
 datasets = os.listdir('data/')
 
+# Creates dropdown box for time-period selection and stores relevant filename with ".csv" removed in "selected_year"
 selected_dataset = st.sidebar.selectbox("Time Period:", options = datasets, help="Select a time period", format_func=lambda x : x.replace('.csv','').replace('_','/'))
 selected_year = selected_dataset.replace('.csv', '')
 
-st.sidebar.write("-" * 34)  # horizontal separator line.
+# Creates a horizontal separator, dividing the time-period selector from the Create New Place section of the sidebar
+st.sidebar.write("-" * 34)
 
 
 # Import Data
 # -------------------------------------------------------------------------
-
+# Creates empty dataset_dict dictionary used in next step of code
 dataset_dict = {}
 
-# Loads in all datasets, regardless of how many there are
+# Iterates through each dataset(year) in the data folder importing the data using the get_data function from utils.
+# Imported data is stored in the library created above, as a dataframe for each year
 for dataset in datasets:
     year = dataset.replace('.csv', '')
     dataset_dict[year] = utils.get_data('data/' + dataset)
 
+# Uses get_sidebar function to store a list of ICBs from the dataframe for the selected time-period; see utils doc for more info on get_sidebar
 icb = utils.get_sidebar(dataset_dict[selected_year])
 
 
 # SIDEBAR Main
 # -------------------------------------------------------------------------
+# Sidebar subheader
 st.sidebar.subheader("Create New Place")
 
-# ICB Selection
+# Place creation drop-down menus
+# Creates expander box containing ICB selection
 with st.sidebar.expander("Select an ICB", expanded=True):
+    
+    # Creates drop-down box with list of ICBs based on icb value created above
     icb_choice = st.selectbox("Select an ICB from the drop-down", icb, help="Select an ICB", label_visibility="hidden")
 
-    # Generate the list of LADs based on ICB selection
+    # Generate the list of LADs by filtering the dataset for the selected time period based on the ICB selected above
     lad = dataset_dict[selected_year]["LA District name"].loc[
         dataset_dict[selected_year]["ICB name"] == icb_choice
     ].unique().tolist()
 
-    # Create a DataFrame for the LADs with a 'tick' column
+    # Create a DataFrame from the list of LADs
     lad_list_to_select = pd.DataFrame(lad, columns=['Local Authority District'])
+    # Add a tick column to LAD dataframe
     lad_list_to_select['tick'] = False
 
-    # Use st.expander to maintain state for LAD filter
+    # Creates an expander box containing LAD selection
     with st.sidebar.expander('Select Local Authority District(s)', expanded=False):
+        # Creates an interactive data editor to allow users to select LADs, using lad_list_to_select as an input
         lad_choice = st.data_editor(
             lad_list_to_select,
+            # Creates a tickbox interface in the tool which updates the tick column
             column_config={
                 "tick": st.column_config.CheckboxColumn("Select", default=False)
             },
             hide_index=True
         )
-
+        # Outputs from above LAD tick-list saved to selected_lads list
         selected_lads = lad_choice[lad_choice['tick']]["Local Authority District"].tolist()
 
     # Filter practices based on selected ICB and LADs
+    # Checks whether the selected_lads variable contains data to determine whether to filter on LAD and ICB, or just ICB
+    # Outputs the practice_display field to filtered_practices variable as a list
     if not selected_lads:
         filtered_practices = dataset_dict[selected_year]["practice_display"].loc[
             dataset_dict[selected_year]["ICB name"] == icb_choice
@@ -224,146 +251,200 @@ with st.sidebar.expander("Select an ICB", expanded=True):
             (dataset_dict[selected_year]["ICB name"] == icb_choice)
         ].unique().tolist()
 
-    # Create DataFrame for GP practices with a 'tick' column
+    # Creates a dataframe from the filtered_practices list
     practice_list_to_select = pd.DataFrame(filtered_practices, columns=['GP Practice'])
+    # Adds a tick column to list of GP practices
     practice_list_to_select['tick'] = False
 
-    # Sidebar for GP Practice filter
+    # Creates an expander box to contain GP selection
     with st.sidebar.expander("Select GP Practice(s)", expanded=False):
-        # Create three columns for the buttons with reduced width
+        # Create three columns for the buttons; last column blank to maintain suitable width
         col1, col2, col3 = st.columns([1.1, 1.3, 2.2])
 
-        # Place buttons in separate columns
         with col1:
+            # Creates a button labelled "Select all"
             if st.button("Select all"):
+                # Sets the tick column of practice_list_to_select to True
                 practice_list_to_select['tick'] = True
-                st.session_state.practice_list = practice_list_to_select.copy() #Store in session state
+                # Stores the updated pratice selection in session_state.practice_list
+                st.session_state.practice_list = practice_list_to_select.copy()
 
         with col2:
+            # Creates a button labelled "Deselect all"
             if st.button("Deselect all"):
+                # Sets the tick column of practice_list_to_select to False
                 practice_list_to_select['tick'] = False
-                st.session_state.practice_list = practice_list_to_select.copy() #Store in session state
+                # Stores the updated practice selection in session_state.practice_list
+                st.session_state.practice_list = practice_list_to_select.copy()
 
+        # Sets practice_list, last_icb_choice, and last_selected_lads to match practice_list_to_select, icb_choice, and selected_lads created above if any of them do not currently exist or match those values
         if 'practice_list' not in st.session_state or st.session_state.get('last_icb_choice') != icb_choice or st.session_state.get('last_selected_lads') != selected_lads:
             st.session_state.practice_list = practice_list_to_select.copy()
             st.session_state['last_icb_choice'] = icb_choice
             st.session_state['last_selected_lads'] = selected_lads
 
-        # Practice choice table
+        # Creates interactive practice choice table using practice_list from the session state as an input, saved as the practice_choice dataframe
         practice_choice = st.data_editor(
             st.session_state.practice_list,
+            # Creates a tickbox column which updates the tick column in the practice_list
             column_config={
                 "tick": st.column_config.CheckboxColumn("Select", default=False)
             },
             hide_index=True
         )
 
-    # Get selected practices
+    # Creates a list of "GP Practice" values by filtering the practice_choice dataframe created above for ticked records
     selected_practices = practice_choice[practice_choice['tick']]["GP Practice"].tolist()
 
+# Creates a text input box for the user to name their place, storing the input text under place_name
 place_name = st.sidebar.text_input(
     "Name your Place",
     "",
+    # Text below is displayed if the user interacts with the ? help icon
     help="Give your defined place a name to identify it",
 )
 
+# Code below saves the selected place to the session state when save place is clicked
+# Creates a sidebar button labelled "Save Place"
 if st.sidebar.button("Save Place", help="Save place to session data"):
+    # Checks whether no practices are selected or if the user has used the name "Default Place" and then prints a relevant error
     if selected_practices == [] or place_name == "Default Place":
         if selected_practices == []:
             st.sidebar.error("Please select one or more GP practices")
         if place_name == "Default Place":
-            st.sidebar.error(
-                "Please rename your place to something other than 'Default Place'"
-            )
+            st.sidebar.error("Please rename your place to something other than 'Default Place'")
+    # Checks whether the user has entered a place_name and print an error if not
     if place_name == "":
         st.sidebar.error("Please give your place a name")
+    # If not the below code executes to save the place to session state
     else:
+        # This code checks again that there are practices selected and the place_name isn't "Default Place" and stops running if so
         if selected_practices == [] or place_name == "Default Place":
             print("")
+        # If not then below executes to save the place to session state
         else:
+            # Checks whether the Default Place is the only place in the session state
             if (
                 len(st.session_state.places) <= 1
                 and st.session_state.places[0] == "Default Place"
             ):
+                # If Default Place is found in session state it is deleted
                 del [st.session_state["Default Place"]]
                 del [st.session_state.places[0]]
+                # Checks whether the place_name is in session state
                 if [place_name] not in st.session_state:
+                    # If place_name is not found it's added to the session state along with associated practices and ICB
                     st.session_state[place_name] = {
                         "gps": selected_practices,
                         "icb": icb_choice
                     }
+                # Checks whether places list exists in the session state
                 if "places" not in st.session_state:
+                    # If not found it creates the places list and adds the place_name
                     st.session_state.places = [place_name]
+                # Checks whether place_name is in places list in session state
                 if place_name not in st.session_state.places:
+                    # If place_name not in places list it is added to the end
                     st.session_state.places = st.session_state.places + [place_name]
+            # If Default Place is not in the session state then the below runs
             else:
+                # Checks whether the place_name is in session state
                 if [place_name] not in st.session_state:
+                    # If place_name is not found it's added to the session as a dictionary state along with associated practices and ICB
                     st.session_state[place_name] = {
                         "gps": selected_practices,
                         "icb": icb_choice
                     }
+                # Checks whether places list exists in the session state
                 if "places" not in st.session_state:
+                    # If not found it creates the places list and adds the place_name
                     st.session_state.places = [place_name]
+                # Checks whether place_name is in places list in session state
                 if place_name not in st.session_state.places:
+                    # If place_name not in places list it is added to the end
                     st.session_state.places = st.session_state.places + [place_name]
 
-st.sidebar.write("-" * 34)  # horizontal separator line.
+# Horizontal separator for the sidebar
+st.sidebar.write("-" * 34)
 
+# Creates a dictionary (session_state_dict) wher each place from the places list is added with an empty list
 session_state_dict = dict.fromkeys(st.session_state.places, [])
+
+# Each place in the session_state_dict is updated with the gps and icb selection saved for it in session state
 for key, value in session_state_dict.items():
     session_state_dict[key] = st.session_state[key]
+# Adds a new key to the session_state_dict named places and adds the list of places from session_state as the associated value
 session_state_dict["places"] = st.session_state.places
 
+# Dumps the contents of the session_state_dict into a json string named session_state_dump used to download session data
 session_state_dump = json.dumps(session_state_dict, indent=4, sort_keys=False)
 
-# Use file uploaded to read in groups of practices
+# Create the Advanced Options tick-box in the sidebar which toggles the download and upload features on and off
 advanced_options = st.sidebar.checkbox("Advanced Options")
 if advanced_options:
-    # downloads
+    # Creates a button which downloads the session_state_dump json string as a json file
     st.sidebar.download_button(
         label="Download session data as JSON",
         data=session_state_dump,
         file_name="session.json",
         mime="text/json",
     )
-    # uploads
+    # Creates a form in the sidebar with key "my-form" (a container that groups multiple input widgets to be submitted together)
     form = st.sidebar.form(key="my-form")
+    # Adds a file-uploader to the form restricted to json files, stored under group_file
     group_file = form.file_uploader(
         "Upload previous session data as JSON", type=["json"]
     )
+    # Adds a submit button to the form
     submit = form.form_submit_button("Submit")
+    # Following code processes form submissions
     if submit:
+        # Checks whether file was uploaded
         if group_file is not None:
+            # Stores loaded file under variable "d"
             d = json.load(group_file)
+            # Overwrites the list of places in session_state with the list from the uploaded file
             st.session_state.places = d["places"]
+            # Stores the individual place data in the session_state from the uploaded file
             for place in d["places"]:
                 st.session_state[place] = d[place]
+            # Displays a progress bar increasing 1% per 0.01 seconds
             my_bar = st.sidebar.progress(0)
             for percent_complete in range(100):
                 time.sleep(0.01)
                 my_bar.progress(percent_complete + 1)
             my_bar.empty()
 
+# Creates a tickbox to toggle the display of session data (used later in the main body)
 see_session_data = st.sidebar.checkbox("Show Session Data")
+
 
 # BODY
 # -------------------------------------------------------------------------
-
+# Sets select_index to be the length of the list of places -1, which is the index of the last item in the list (due to Python indexing)
 select_index = len(st.session_state.places) - 1  # find n-1 index
+# Creates an empty placeholder
 placeholder = st.empty()
+# Creates a drop-down menu to let users choose from items in the places list in session_state, defaulting to the last-created place identified above
+# selectbox has unique key "before"
 option = placeholder.selectbox(
     "Select Place", (st.session_state.places), index=select_index, key="before"
 )
 
+
 # DELETE PLACE
 # -------------------------------------------------------------------------
+# Checks whether after exists in the session_state, and if not sets it to the value of before from session_state
 if "after" not in st.session_state:
     st.session_state.after = st.session_state.before
-
+# Creates a "Delete Current Selection" button; sets delete_place to true when clicked
 label = "Delete Current Selection"
 delete_place = st.button(label, help=label)
+# Creates an empty placeholder for the delete progress bar
 my_bar_delete = st.empty()
+# Code below runs if button is clicked
 if delete_place:
+    # Confirms there is only one place in the list (i.e. the default place needs to be reinstated)
     if len(st.session_state.places) <= 1:
         del [st.session_state[st.session_state.after]]
         if "Default Group" not in st.session_state:
@@ -398,72 +479,99 @@ if delete_place:
             time.sleep(0.01)
             my_bar_delete.progress(percent_complete + 1)
         my_bar_delete.empty()
+    # If there is more than once place in the list then the below executes
     else:
+        # Deletes from the session_state the currently selected place (stored in session_state.after)
         del [st.session_state[st.session_state.after]]
+        # Deletes the currently selected place from the list of places (stores in session_state.after)
         del [
             st.session_state.places[
                 st.session_state.places.index(st.session_state.after)
             ]
         ]
+        # Displays a progress bar, increasing 1% every 0.01 seconds
         my_bar_delete.progress(0)
         for percent_complete in range(100):
             time.sleep(0.01)
             my_bar_delete.progress(percent_complete + 1)
         my_bar_delete.empty()
 
-select_index = len(st.session_state.places) - 1  # find n-1 index
+# Recreates the drop-down menu selectbox to reflect the updated list
+# Sets select_index to be the length of the list of places -1, which is the index of the last item in the list (due to Python indexing)
+select_index = len(st.session_state.places) - 1
+# Creates the places drop-down menu, defaulting to the last-created place identified above
+# selectbox has unique key "after"
 option = placeholder.selectbox(
     "Select Place", (st.session_state.places), index=select_index, key="after"
 )
+# icb_name populated from the place selected in the drop-down menu
 icb_name = st.session_state[st.session_state.after]["icb"]
+# group_gp_list, used to generate the map, populated from the place selected in the drop-down menu
 group_gp_list = st.session_state[st.session_state.after]["gps"]
 
 # MAP
 # -------------------------------------------------------------------------
-
+# Initialises the map
 map = folium.Map(location=[52, 0], zoom_start=10, tiles="openstreetmap")
+# Initialises the list of latitudes
 lat = []
+# Initialises the list of longitudes
 long = []
 
+# Populates the map with the coordinates of the practices in the group_gp_list created above
+# Cycles through each gp practice in the list, performing the below
 for gp in group_gp_list:
+    # Uses the escape function to avoid special characters in gp names breaking code
     escaped_gp = re.escape(gp)
+    # If the practice name isn't found in the list of practice names in the dataset an error is printed and the loop moves to the next practice
     if ~dataset_dict[selected_year]["practice_display"].str.contains(escaped_gp).any():
         st.write(f"{gp} is not available in this time period")
         continue
+    # Retrieves the practice's latitude and longitude from the values in the dataset
     latitude = dataset_dict[selected_year]["Latitude"].loc[dataset_dict[selected_year]["practice_display"] == gp].item()
     longitude = dataset_dict[selected_year]["Longitude"].loc[dataset_dict[selected_year]["practice_display"] == gp].item()
+    # Append the retrieved longitude and latitude to the lists
     lat.append(latitude)
     long.append(longitude)
+    # Adds a marker to the map with a popup label matching the gp entry in the group_gp_list
     folium.Marker(
         [latitude, longitude],
         popup=str(gp),
         icon=folium.Icon(color="darkblue", icon="fa-user-md", prefix="fa"),
     ).add_to(map)
 
-
+# If the latitude list is empty, print an error message to say there are no practices from the place available
 if not lat:
     st.write("No GP Practices in this Place are available in this time period")
     st.stop()
 
 # bounds method https://stackoverflow.com/a/58185815
+# Sets the bounds of the map; ensures all markers are visible with a margin added to the latitude
 map.fit_bounds(
     [[min(lat) - 0.02, min(long)], [max(lat) + 0.02, max(long)]]
-)  # add buffer to north
-# call to render Folium map in Streamlit
+)
+
+# Renders the map in Streamlit
 folium_static(map, width=700, height=300)
 
-# Group GP practice display
+# Creates info boxes showing the relevant year and practices displayed
+# Cleans the list of group_gp_list practices, removing colons, single quotes, and square brackets
 list_of_gps = re.sub(
     "\w+:",
     "",
     str(group_gp_list).replace("'", "").replace("[", "").replace("]", ""),
 )
+# Displays the selected_year defined above in a string for user info
 st.info(f"This information pertains to the **{selected_year.replace("_","/")}** time period")
+# Displays the selected practices from list_of_gps in a string for user info
 st.info("**Selected GP Practices:**" + list_of_gps)
 
-
+# The below query strings are used in the get_data_for_all_years function to filter the dataset to the selected place and ICB before aggregating
+# Prepares a query string to filter the practice_display field by value in place_state (see utils)
 gp_query = "practice_display == @place_state"
-icb_query = "`ICB name` == @icb_state"  # escape column names with backticks https://stackoverflow.com/a/56157729
+# Prepares a query string to filter the "ICB name" field by the value in icb_state (see utils)
+# Escape column names with backticks https://stackoverflow.com/a/56157729
+icb_query = "`ICB name` == @icb_state"
 
 # "Weighted G&A pop",
 # "Weighted Community pop",
@@ -526,11 +634,18 @@ icb_query = "`ICB name` == @icb_state"  # escape column names with backticks htt
 
 # Metrics
 # -------------------------------------------------------------------------
-data_all_years = utils.get_data_for_all_years(dataset_dict, st.session_state, aggregations, index_numerator, index_names, gp_query, icb_query) #this is getting the other data
+# Aggregates data and calculates indices for all places and ICBs in session_state, stored in a library
+data_all_years = utils.get_data_for_all_years(dataset_dict, st.session_state, aggregations, index_numerator, index_names, gp_query, icb_query)
+# Filters the data_all_years dataframe to only records for the selected year and where the "Place / ICB" matches to the selection from the drop-down menu
 df = data_all_years[selected_year].loc[data_all_years[selected_year]["Place / ICB"] == st.session_state.after]
+# Resets the index of the data frame to account for dropped records
 df = df.reset_index(drop=True)
 
-#Core Index
+st.write(df)
+
+# Creates lists for the metric columns and metric names
+# columns and names lists must be in the same order to be fetched correctly below
+# Split into two groups to enable multiple rows layout in tool
 metric_cols = [
     "G&A Index",
     "Community Index",
@@ -557,24 +672,34 @@ metric_names2 = [
     "Health Inequals",
 ]
 
+# Uses metric_calcs to retrieve the "Overall Core Index" and formats it to 2dp
 place_metric, icb_metric = metric_calcs(df, "Overall Core Index")
 place_metric = "{:.2f}".format(place_metric)
+# Prints the "Overall Core Index" along with label as a header
 st.header("Core Index: " + str(place_metric))
 
+# Creates expander box to contain the core sub-indices
 with st.expander("Core Sub Indices", expanded  = True):
 
+    # Creates a number of columns equal to the length of the metric_cols list
     cols = st.columns(len(metric_cols))
+    # Loops through each pairing in metric_cols and metric_names
     for metric, name in zip(metric_cols, metric_names):
+        # Uses metric_calcs to fetch the value for the index from metric_cols from the df, stored in place_metric
         place_metric, icb_metric = metric_calcs(
             df,
             metric,
         )
+        # Formats place_metric to 2dp
         place_metric = "{:.2f}".format(place_metric)
+        # Finds the column number relating to the location of the metric in the "metric_cols" list.
+        # Uses the metric method to display the data, with the name from "metric_names" as the label and the index fetched above as the value.
         cols[metric_cols.index(metric)].metric(
             name,
             place_metric,  # icb_metric, delta_color="inverse"
         )
 
+    # Repeats the process above using the "metric_cols2" and "metric_names2" lists, to produce the 2nd row of data.
     cols = st.columns(len(metric_cols2)+1)
     for metric, name in zip(metric_cols2, metric_names2):
         place_metric, icb_metric = metric_calcs(
@@ -587,15 +712,14 @@ with st.expander("Core Sub Indices", expanded  = True):
             place_metric,  # icb_metric, delta_color="inverse"
         )
 
-#Component Relative Weighting
+# Drop-down text box with supporting notes
 with st.expander("Relative Weighting of Components"):
     st.markdown(
         """The relative weighting applied to each of these components are provided in Workbook J.  These weightings are based on modelled estimated expenditure in 2025/26.
         \n\nThese relative weightings are based on national modelled expenditure, and do not take into consideration variation of weights at the local level.  It is not appropriate to apply these weights to place-level indices that are relative to the ICB, not England.
         """)
 
-#Primary Care Index
-#Core Index
+# As with core indexes above, lists of indexes and names to be displayed
 metric_cols = [
     "Primary Medical Care Need Index",
     "Health Inequalities Index",
@@ -605,13 +729,18 @@ metric_names = [
     "Primary Medical Care Need****",
     "Health Inequals",
 ]
+
+# Uses metric_calcs to retrieve the "Primary Medical Care Index" and formats it to 2dp
 place_metric, icb_metric = metric_calcs(df, "Primary Medical Care Index")
 place_metric = "{:.2f}".format(place_metric)
+# Prints the "Primary Medical Care Index" along with label as a header, and a supporting note
 st.header("Primary Medical Care Index: " + str(place_metric))
 st.caption("Based on weighted populations from the formula for ICB allocations, not the global sum weighted populations***")
 
+# Expander box to contain primary care sub-indices.
 with st.expander("Primary Medical Care Sub Indices", expanded  = True):
 
+    # Loops through the index and names lists, as with the core sub-indices above.
     cols = st.columns(3)
     for metric, name in zip(metric_cols, metric_names):
         place_metric, icb_metric = metric_calcs(
@@ -626,35 +755,41 @@ with st.expander("Primary Medical Care Sub Indices", expanded  = True):
 
 # Downloads
 # -------------------------------------------------------------------------
+# Gets the current date and time and stores it as a string formatted YYYY-MM-DD
 current_date = datetime.now().strftime("%Y-%m-%d")
 
 st.subheader("Download Data")
 
+# Creates a checkbox labelled "Preview data download", which is ticked by default
 print_table = st.checkbox("Preview data download", value=True)
+# If the print_table checkbox is ticked, uses the write_table function to display the data loaded using the "get_data_for_all_years" function, filtered for the currently selected year
 if print_table:
     with st.container():
         utils.write_table(data_all_years[selected_year])
 
-# csv_header = b'WARNING: this is a warning message'
-# CSV Header content
+# Content that is added to the first four lines of the downloaded Excel file.
 csv_header1 = "PLEASE READ: Below you can find the results for the places you created, and for the ICB they belong to, for the year you selected."
 csv_header2 = "Note that the need indices for the places are relative to the ICB (where the ICBs need index = 1.00), while the need index for the ICB is relative to national need (where the national need index = 1.00)."
 csv_header3 = "This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the FAQ tab available in the tool."
 csv_header4 = ""
 
-
-# Create a BytesIO buffer for the Excel file
+# Create a BytesIO buffer to store the Excel file while it's being populated
 excel_buffer = io.BytesIO()
-# Create a Pandas Excel writer using the XlsxWriter engine
+
+# Writes to the excel_buffer file
 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
     
+    # Loops through each key/value pair in the data_all_years dictionary
     for year, df in data_all_years.items():
-        worksheet_name = f"Allocations for {year}" #Got to be less than 32 characters
-        worksheet = writer.book.add_worksheet(worksheet_name.replace("/", "_")) #Excel doesn't like the slashes
+        # Sets the name for each tab in the workbook, appending the year to the end (32 characters max)
+        worksheet_name = f"Allocations for {year}"
+        # Adds a worksheet with the set name, replacing "/" with "_"
+        worksheet = writer.book.add_worksheet(worksheet_name.replace("/", "_"))
+        # Uses the write_headers function to add the headers to the sheet and return the correct row to load the data from, start_row
         start_row = utils.write_headers(worksheet, csv_header1, csv_header2, csv_header3, csv_header4)
-
-        # Write the DataFrame column names
+        # Uses write_row from xlsxwriter to write the column names from the df at the start_row
         worksheet.write_row(start_row, 0, df.columns)
+        # 
         for r, row in enumerate(df.values, start=start_row+1):
             worksheet.write_row(r,0,row)
     # Save the Excel file

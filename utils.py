@@ -97,12 +97,15 @@ def write_headers(sheet, *csv_headers):
     
     return header_row_count + 1  # Return the starting row for data
 
-# aggregate on a query and set of aggregations
-#Name is the name of the place in the session state, 'aggregations' tells it how to sum each column, 'on' is what to group it by. Not sure what the not in bit is doing. 
-#Query filters to make sure that GP Display (which is the gp name and code joined together by utils) is in the session state place list
-# Function outputs filtered data and grouped, filtered data separately
+# Aggregates a dataframe; how data is grouped and which aggregations are performed depends on given inputs.
+# Used exclusively in the get_data_all_years function; when used there inputs are as below:
+## df is the already filtered (using a query string) data from the dataset_dict, meaning the data will only contain a single place or ICB before aggregate is run.
+## name is the place taken from the session_state.places list, used to populate the "on" field if it's not already in the data.
+## on is either the string "Place Name" or "ICB name", telling the function what to group on.
+## aggregations is the library of column names and aggregation functions, defined in the main tool page.
+# This function also checks that the df includes the specified "on" column and, if not, creates it and populates it with the name value, before aggregating.
+# The outputs are the same df initially loaded into the function (df) and the aggregated and grouped df (df_group)
 def aggregate(df, name, on, aggregations):
-    # This df has already been queried.
     if on not in df.columns:
         df.insert(loc=0, column=on, value=name)
 
