@@ -641,8 +641,6 @@ df = data_all_years[selected_year].loc[data_all_years[selected_year]["Place / IC
 # Resets the index of the data frame to account for dropped records
 df = df.reset_index(drop=True)
 
-st.write(df)
-
 # Creates lists for the metric columns and metric names
 # columns and names lists must be in the same order to be fetched correctly below
 # Split into two groups to enable multiple rows layout in tool
@@ -830,6 +828,7 @@ btn = st.download_button(
     mime="application/zip",
 )
 
+# Expander box with notes text
 with st.expander("Notes", expanded = True):
     st.markdown(
         "*The Community Services index relates to the half of Community Services that are similarly distributed to district nursing. The published Community Services target allocation is calculated using the Community Services model. This covers 50% of Community Services. The other 50% is distributed through the General & Acute model."
@@ -866,14 +865,14 @@ with st.expander("About the ICB Place Based Tool", expanded = True):
         "More information on the latest allocations, including contact details, can be found [here](https://www.england.nhs.uk/allocations/)."
     )
 
+# Footer with info on Allocations inbox
 st.info(
     "For support with using the AIF Allocation tool please email: [england.revenue-allocations@nhs.net](mailto:england.revenue-allocations@nhs.net)"
 )
 
+# Displays session data if see_session_data is TRUE
 # Show Session Data
 # -------------------------------------------------------------------------
 if see_session_data:
     st.subheader("Session Data")
     st.session_state
-
-
