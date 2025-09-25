@@ -509,6 +509,7 @@ icb_name = st.session_state[st.session_state.after]["icb"]
 # group_gp_list, used to generate the map, populated from the place selected in the drop-down menu
 group_gp_list = st.session_state[st.session_state.after]["gps"]
 
+
 # MAP
 # -------------------------------------------------------------------------
 # Initialises the map
