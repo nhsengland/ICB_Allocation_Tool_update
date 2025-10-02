@@ -1,3 +1,5 @@
+# Libraries
+# -------------------------------------------------------------------------
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
 
@@ -132,7 +134,7 @@ def aggregate(df, name, on, aggregations):
     Parameters:
     df: The pre-filtered (using a query string) data from the dataset_dict, containing only a single place or ICB before aggregation.
     name: The place taken from the session_state.places list, used to populate the "on" field, if it's not already in the data.
-    on: Either the string "Place Name" or "ICB name", telling the function what to group on.
+    on: Either the string "Place Name" or "ICB name", telling the function what to group on.  Both variations are called in the get_data_all_years function to create aggregations at both place-level and ICB-level.
     aggregations: The library of column names and the aggregation functions to be performed on them, defined in the ICB_Place_Based_Tool.py file
 
     Returns:
@@ -190,7 +192,7 @@ def get_data_for_all_years(dataset_dict, session_state, aggregations, index_nume
     Parameters:
     ----------
     dataset_dict : dict
-        A dictionary where the keys are filenames and the values are corresponding datasets (DataFrames).
+        A dictionary where the keys are filenames and the values are corresponding datasets (DataFrames). When called in the tool this is the imported data with a dataframe for each year.
         
     session_state : object
         An object that contains the session state, including a list of places and corresponding 
@@ -262,7 +264,7 @@ def get_data_for_all_years(dataset_dict, session_state, aggregations, index_nume
         for obj in dict_obj:
             df_list.append(dict_obj[obj])
 
-        # flaten list for concatination
+        # flatten list for concatenation
         flat_list = [item for sublist in df_list for item in sublist]
         large_df = pd.concat(flat_list, ignore_index=True)
 

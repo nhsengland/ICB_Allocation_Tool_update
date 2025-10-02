@@ -10,9 +10,10 @@ DESCRIPTION:    Streamlit weighted capitation tool
 CONTRIBUTORS:   Craig Shenton, Jonathan Pearson, Mattia Ficarelli, Samuel Leat, Jennifer Struthers
 CONTACT:        england.revenue-allocations@nhs.net
 CREATED:        2021-12-14
-VERSION:        0.0.1
+LAST UPDATED:   2025-10-02
+VERSION:        3.0.1
 """
-
+# Note that the above updated date refers only to the code for the tool, not source data
 
 # Libraries
 # -------------------------------------------------------------------------
@@ -96,8 +97,8 @@ def convert_df(df):
     return df.to_csv(index=False).encode("utf-8")
 
 # Create metric_calcs function
-# Fetches the specified metric from the given dataframe, and rounds it using "excel_round"
-# Then subtracts from 1 to get a relative difference, rounded using "excel_round"
+# Fetches the specified metric from the given dataframe, and rounds it using "excel_round", giving the place_metric output used in the tool
+# The icb_metric is then created by subtracting 1 from the place metric to get a relative difference, and rounded using "excel_round".  This is not currently used in the tool and can likely be removed.
 # When called below:
 ## "group_need_indices" are the df created by the "get_data_for_all_years" function
 ## "metric_index" the name of the column to be retrieved from the df
@@ -171,7 +172,8 @@ formatted_date = time.strftime('%d %B %Y', last_modified_date)
 st.write(f"Last updated: {formatted_date}")
 
 
-# SIDEBAR Prologue (have to run before loading data)
+# SIDEBAR Prologue
+## This section of the sidebar code has to remain at this location in the tool code as it needs to be run before the data is imported.
 # -------------------------------------------------------------------------
 # Call the function to set sidebar width
 utils.set_sidebar_width(min_width=500, max_width=500)
@@ -367,7 +369,7 @@ if st.sidebar.button("Save Place", help="Save place to session data"):
 # Horizontal separator for the sidebar
 st.sidebar.write("-" * 34)
 
-# Creates a dictionary (session_state_dict) wher each place from the places list is added with an empty list
+# Creates a dictionary (session_state_dict) where each place from the places list is added with an empty list
 session_state_dict = dict.fromkeys(st.session_state.places, [])
 
 # Each place in the session_state_dict is updated with the gps and icb selection saved for it in session state
@@ -434,6 +436,7 @@ option = placeholder.selectbox(
 
 # DELETE PLACE
 # -------------------------------------------------------------------------
+# Code note: The use of before and after in the code above and below avoids issues like selectboxes trying to show deleted places, etc... Before is essentially the place selected before the deletion, and after is the place selected after
 # Checks whether after exists in the session_state, and if not sets it to the value of before from session_state
 if "after" not in st.session_state:
     st.session_state.after = st.session_state.before
@@ -639,7 +642,7 @@ icb_query = "`ICB name` == @icb_state"
 data_all_years = utils.get_data_for_all_years(dataset_dict, st.session_state, aggregations, index_numerator, index_names, gp_query, icb_query)
 # Filters the data_all_years dataframe to only records for the selected year and where the "Place / ICB" matches to the selection from the drop-down menu
 df = data_all_years[selected_year].loc[data_all_years[selected_year]["Place / ICB"] == st.session_state.after]
-# Resets the index of the data frame to account for dropped records
+# Resets the index of the data frame to account for records filtered out above records
 df = df.reset_index(drop=True)
 
 # Creates lists for the metric columns and metric names
@@ -803,11 +806,8 @@ with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
     # Save the Excel file
     writer.close()
 
-# Move the pointer of the buffer to the beginning
+# Move the pointer of the buffer to the beginning (by default sits at the end of the data written to the buffer)
 excel_buffer.seek(0)
-
-
-
 
 # Open the text documentation file
 with open("docs/ICB allocation tool documentation.txt", "rb") as fh:
