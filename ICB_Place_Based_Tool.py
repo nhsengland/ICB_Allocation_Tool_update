@@ -577,64 +577,6 @@ gp_query = "practice_display == @place_state"
 # Escape column names with backticks https://stackoverflow.com/a/56157729
 icb_query = "`ICB name` == @icb_state"
 
-# "Weighted G&A pop",
-# "Weighted Community pop",
-# "Weighted Mental Health pop",
-# "Weighted Maternity pop",
-# "Weighted Health Inequalities pop",
-# "Weighted Prescribing pop",
-# "Overall Weighted pop",
-
-# order = [
-#     0,
-#     -9,
-#     -8,
-#     -7,
-#     -6,
-#     -5,
-#     -4,
-#     -2,
-#     -3,
-#     -1,
-#     1,
-#     2,
-#     3,
-#     4,
-#     5,
-#     6,
-#     7,
-#     8,
-#     9,
-#     10,
-# ]  # setting column's order
-# large_df = large_df[[large_df.columns[i] for i in order]]
-
-# All metrics - didn't work well, but might be useful
-# for option in dict_obj:
-#     st.write("**", option, "**")
-#     for count, df in enumerate(dict_obj[option][1:]):  # skip first (ICB) metric
-#         # Group GP practice display
-#         group_name = dict_obj[option][count + 1]["Group / ICB"].item()
-#         group_gps = (
-#             "**"
-#             + group_name
-#             + " : **"
-#             + re.sub(
-#                 "\w+:",
-#                 "",
-#                 str(st.session_state[group_name]["gps"])
-#                 .replace("'", "")
-#                 .replace("[", "")
-#                 .replace("]", ""),
-#             )
-#         )
-#         st.info(group_gps)
-#         cols = st.columns(len(metric_cols))
-#         for metric, name in zip(metric_cols, metric_names):
-#             place_metric, icb_metric = metric_calcs(dict_obj[option][count], metric,)
-#             cols[metric_cols.index(metric)].metric(
-#                 name, place_metric,  # icb_metric, delta_color="inverse"
-#             )
 
 # Metrics
 # -------------------------------------------------------------------------
