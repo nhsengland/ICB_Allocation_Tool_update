@@ -1,3 +1,5 @@
+# Libraries
+# -------------------------------------------------------------------------
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
 
@@ -5,11 +7,27 @@ import pandas as pd
 from decimal import Decimal, ROUND_HALF_UP
 import os
 
+
 # Load data and cache
-@st.cache_data()  # use Streamlit cache decorator to cache this operation so data doesn't have to be read in everytime script is re-run
+# Uses the Streamlit cache decorator to cache this operation so the data doesn't have to be read in everytime script is re-run
+@st.cache_data()
+# Defines the get_data function
 def get_data(path):
+    """
+    Loads data from a csv at the provided location and stores it in a dataframe.
+    Specified columns are renamed as below and nulls are replaced with zeroes.
+    Prints 'cache miss' to the terminal before loading, to identify that this function is actually running, vs just pulling from cache.
+    
+    Parameters:
+    path: The location of the CSV to be loaded.
+    
+    Returns:
+    df: The data frame containing the CSV data, with columns renamed
+    """
     print('cache miss')
+    # Creates a dataframe using the csv found at the location the function is called on
     df = pd.read_csv(path)
+    # Renames the columns as below
     df = df.rename(
         columns={
             "Practice_Code": "GP Practice code",
@@ -40,16 +58,17 @@ def get_data(path):
             "Final WP": "Overall Weighted pop",
             "Primary Medical Care WP": "Weighted Primary Medical Care Need",
             "Final PMC WP": "Weighted Primary Care",
-            
-
         }
     )
+    # Replaces any NA values with zeroes
     df = df.fillna(0)
+    # Creates a 'practice_display' column by combining the practice code and name into a single field.
     df["practice_display"] = df["GP Practice code"] + ": " + df["GP Practice name"]
     return df
 
 
 # Store defined places in a list to access them later for place based calculations
+# Not currently called anywhere; likely can be removed
 def store_data():
     if 'data_list' not in st.session_state:
         st.session_state.data_list = []
@@ -63,17 +82,24 @@ def get_sidebar(data):
     icb.sort()
     return icb
 
-# Example utility function to render a table with the first column frozen and no bottom bar
+
+# Function to render a table with AgGrid options
 def write_table(data):
+    """
+    Renders a table with the first column frozen and no bottom-bar.
+
+    Parameters:
+    data: The dataframe to be displayed in a table.
+
+    Returns:
+    AgGrid: The information from the dataframe plus the selected AgGrid options.
+    """
     # Create grid options to pin the first column
     gb = GridOptionsBuilder.from_dataframe(data)
-
     # Freeze the first column (index 0)
     gb.configure_column(list(data.columns)[0], pinned='left')
-    
     # Build the gridOptions dictionary
     gridOptions = gb.build()
-    
     # Display the table with AgGrid
     return AgGrid(data, gridOptions=gridOptions)
 
@@ -97,12 +123,24 @@ def write_headers(sheet, *csv_headers):
     
     return header_row_count + 1  # Return the starting row for data
 
-# aggregate on a query and set of aggregations
-#Name is the name of the place in the session state, 'aggregations' tells it how to sum each column, 'on' is what to group it by. Not sure what the not in bit is doing. 
-#Query filters to make sure that GP Display (which is the gp name and code joined together by utils) is in the session state place list
-# Function outputs filtered data and grouped, filtered data separately
+
+# Creates the aggregate function
 def aggregate(df, name, on, aggregations):
-    # This df has already been queried.
+    """
+    Function aggregates a data frame.  How the data is grouped and which aggregations are performed depends on given inputs.
+    Also checks that the df includes the specified "on" column and, if not, creates it, populating it with the name value, before aggregating.
+    Used exclusively in the get_data_all_years function.  When called there, the inputs are as below.
+    
+    Parameters:
+    df: The pre-filtered (using a query string) data from the dataset_dict, containing only a single place or ICB before aggregation.
+    name: The place taken from the session_state.places list, used to populate the "on" field, if it's not already in the data.
+    on: Either the string "Place Name" or "ICB name", telling the function what to group on.  Both variations are called in the get_data_all_years function to create aggregations at both place-level and ICB-level.
+    aggregations: The library of column names and the aggregation functions to be performed on them, defined in the ICB_Place_Based_Tool.py file
+
+    Returns:
+    df: The same df as initially loaded
+    df_group: The aggregated and grouped df
+    """
     if on not in df.columns:
         df.insert(loc=0, column=on, value=name)
 
@@ -110,14 +148,30 @@ def aggregate(df, name, on, aggregations):
 
     return df, df_group
 
-#Calculate index of weighted populations. Take the groupby output fromn the aggregator and divides it by the population number. Do it by icb and place. 
-#get_index(place_groupby, icb_groupby, index_names, index_numerator)
-#place index is divided by icb index to get a relative number
-#overall index is final_wp / gp pop
+
+# Creates a function to calculate the index of weighted populations.
 def get_index(place_indices, icb_indices, index_names, index_numerator):
+    """
+    Calculates the index of weighted populations.
+    Intended to take the df_group output from the aggregate function and divide it by the GP population, for ICB and place.
+    The place index is then divided by the icb index to create a relative number.
+    The overall index is created by final_wp divided by [GP pop].
+    
+    Parameters:
+    place_indices: A df with place-level data
+    icb_indices: A df with ICB-level data
+    index_names: List of the indexes to be created.  Defined in ICB_Place_Based_Tool.py
+    index_numerator: List of column names that contain the numerator values for the index calculation.  Defined in ICB_Place_Based_Tool.py
+
+    Returns:
+    place_indices: Input place_indices df with new index_names column
+    icb_indices: Input icb_indices df with new index_names column
+    """
+    # Creates a new column in icb_indices called "index_names", containing [index_numerator] / [GP pop]
     icb_indices[index_names] = icb_indices[index_numerator].div(
         icb_indices["GP pop"].values, axis=0
     )
+    # Creates a new column in place_indices called "index_names", containing ([index_numerator] / [GP pop]) / ICB index
     place_indices[index_names] = (
         place_indices[index_numerator]
         .div(place_indices["GP pop"].values, axis=0)
@@ -138,7 +192,7 @@ def get_data_for_all_years(dataset_dict, session_state, aggregations, index_nume
     Parameters:
     ----------
     dataset_dict : dict
-        A dictionary where the keys are filenames and the values are corresponding datasets (DataFrames).
+        A dictionary where the keys are filenames and the values are corresponding datasets (DataFrames). When called in the tool this is the imported data with a dataframe for each year.
         
     session_state : object
         An object that contains the session state, including a list of places and corresponding 
@@ -210,7 +264,7 @@ def get_data_for_all_years(dataset_dict, session_state, aggregations, index_nume
         for obj in dict_obj:
             df_list.append(dict_obj[obj])
 
-        # flaten list for concatination
+        # flatten list for concatenation
         flat_list = [item for sublist in df_list for item in sublist]
         large_df = pd.concat(flat_list, ignore_index=True)
 
