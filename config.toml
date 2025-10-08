@@ -1,2 +1,7 @@
 #Sets the allocation year that is used to populate dashboard titles
 allocations_year = '2025/26'
+
+#Repo details used for fetching latest commit date
+owner = "nhsengland"
+repo = "ICB_Allocation_Tool_update"
+branch = "main"
