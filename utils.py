@@ -6,6 +6,8 @@ from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
 from decimal import Decimal, ROUND_HALF_UP
 import os
+import requests
+from datetime import datetime
 
 
 # Load data and cache
@@ -308,3 +310,29 @@ def set_sidebar_width(min_width=300, max_width=300):
         """,
         unsafe_allow_html=True
     )
+
+#Fetch latest date of commit to main GitHub repo main branch and format it for display in tool
+def get_latest_commit_date(owner, repo, branch):
+    """
+    Uses the requests library to pull the latest commit date for the repo from GitHub API.
+
+    Parameters:
+    owner (string): The username of the owner of the repo
+    repo (string): The repo to fetch the latest commit date from
+    branch (string): The branch to fetch the latest commit date from
+
+    Note: In the tool, the parameters are populated from the config file, to make future updates easier.
+
+    Returns:
+    formatted_date (string): The date of the last commit to the specified repo and branch in the format "DD month YYYY"
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/commits/{branch}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        commit_data = response.json()
+        date_str = commit_data["commit"]["committer"]["date"]
+        date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+        formatted_date = date_obj.strftime("%d %B %Y")
+        return formatted_date
+    else:
+        return "Unknown"

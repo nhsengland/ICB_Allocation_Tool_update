@@ -37,6 +37,7 @@ import pandas as pd
 from streamlit_folium import folium_static
 import folium
 import toml
+import requests
 
 
 # Page setup
@@ -161,12 +162,9 @@ render_svg(svg)
 # Page title, calling the defined year from the config file
 st.title("ICB Place Based Allocation Tool " + config['allocations_year'])
 
-# Last updated date line; uses the date of last modification for the file to create a last updated date
-script_path = Path(__file__)
-last_modified_time = script_path.stat().st_mtime
-last_modified_date = time.localtime(last_modified_time)
-formatted_date = time.strftime('%d %B %Y', last_modified_date)
-st.write(f"Last updated: {formatted_date}")
+# Uses the get_latest_commit_date function from utils to fetch the most recent commit date based on details from the config file and displays it on the page
+last_commit_date = utils.get_latest_commit_date(config['owner'], config['repo'], config['branch'])
+st.write(f"Last updated: {last_commit_date}")
 
 
 # SIDEBAR Prologue
