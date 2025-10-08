@@ -67,14 +67,6 @@ def get_data(path):
     return df
 
 
-# Store defined places in a list to access them later for place based calculations
-# Not currently called anywhere; likely can be removed
-def store_data():
-    if 'data_list' not in st.session_state:
-        st.session_state.data_list = []
-    return st.session_state.data_list
-
-
 # Sidebar dropdown list
 @st.cache_data
 def get_sidebar(data):

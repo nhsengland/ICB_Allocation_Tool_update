@@ -98,16 +98,13 @@ def convert_df(df):
 
 # Create metric_calcs function
 # Fetches the specified metric from the given dataframe, and rounds it using "excel_round", giving the place_metric output used in the tool
-# The icb_metric is then created by subtracting 1 from the place metric to get a relative difference, and rounded using "excel_round".  This is not currently used in the tool and can likely be removed.
 # When called below:
 ## "group_need_indices" are the df created by the "get_data_for_all_years" function
 ## "metric_index" the name of the column to be retrieved from the df
 def metric_calcs(group_need_indices, metric_index):
     # Convert the value to float and round it using excel_round to 2 decimal places
     place_metric = utils.excel_round(group_need_indices[metric_index][0].astype(float), 0.01)
-    # Subtract 1 and then round again using excel_round to 2 decimal places
-    icb_metric = utils.excel_round(place_metric - 1, 0.01)
-    return place_metric, icb_metric
+    return place_metric
 
 # Create aggregations dictionary, used in get_data_for_all_years function; tells function how to aggregate each column
 aggregations = {
@@ -577,64 +574,6 @@ gp_query = "practice_display == @place_state"
 # Escape column names with backticks https://stackoverflow.com/a/56157729
 icb_query = "`ICB name` == @icb_state"
 
-# "Weighted G&A pop",
-# "Weighted Community pop",
-# "Weighted Mental Health pop",
-# "Weighted Maternity pop",
-# "Weighted Health Inequalities pop",
-# "Weighted Prescribing pop",
-# "Overall Weighted pop",
-
-# order = [
-#     0,
-#     -9,
-#     -8,
-#     -7,
-#     -6,
-#     -5,
-#     -4,
-#     -2,
-#     -3,
-#     -1,
-#     1,
-#     2,
-#     3,
-#     4,
-#     5,
-#     6,
-#     7,
-#     8,
-#     9,
-#     10,
-# ]  # setting column's order
-# large_df = large_df[[large_df.columns[i] for i in order]]
-
-# All metrics - didn't work well, but might be useful
-# for option in dict_obj:
-#     st.write("**", option, "**")
-#     for count, df in enumerate(dict_obj[option][1:]):  # skip first (ICB) metric
-#         # Group GP practice display
-#         group_name = dict_obj[option][count + 1]["Group / ICB"].item()
-#         group_gps = (
-#             "**"
-#             + group_name
-#             + " : **"
-#             + re.sub(
-#                 "\w+:",
-#                 "",
-#                 str(st.session_state[group_name]["gps"])
-#                 .replace("'", "")
-#                 .replace("[", "")
-#                 .replace("]", ""),
-#             )
-#         )
-#         st.info(group_gps)
-#         cols = st.columns(len(metric_cols))
-#         for metric, name in zip(metric_cols, metric_names):
-#             place_metric, icb_metric = metric_calcs(dict_obj[option][count], metric,)
-#             cols[metric_cols.index(metric)].metric(
-#                 name, place_metric,  # icb_metric, delta_color="inverse"
-#             )
 
 # Metrics
 # -------------------------------------------------------------------------
@@ -675,7 +614,7 @@ metric_names2 = [
 ]
 
 # Uses metric_calcs to retrieve the "Overall Core Index" and formats it to 2dp
-place_metric, icb_metric = metric_calcs(df, "Overall Core Index")
+place_metric = metric_calcs(df, "Overall Core Index")
 place_metric = "{:.2f}".format(place_metric)
 # Prints the "Overall Core Index" along with label as a header
 st.header("Core Index: " + str(place_metric))
@@ -688,7 +627,7 @@ with st.expander("Core Sub Indices", expanded  = True):
     # Loops through each pairing in metric_cols and metric_names
     for metric, name in zip(metric_cols, metric_names):
         # Uses metric_calcs to fetch the value for the index from metric_cols from the df, stored in place_metric
-        place_metric, icb_metric = metric_calcs(
+        place_metric = metric_calcs(
             df,
             metric,
         )
@@ -698,20 +637,20 @@ with st.expander("Core Sub Indices", expanded  = True):
         # Uses the metric method to display the data, with the name from "metric_names" as the label and the index fetched above as the value.
         cols[metric_cols.index(metric)].metric(
             name,
-            place_metric,  # icb_metric, delta_color="inverse"
+            place_metric
         )
 
     # Repeats the process above using the "metric_cols2" and "metric_names2" lists, to produce the 2nd row of data.
     cols = st.columns(len(metric_cols2)+1)
     for metric, name in zip(metric_cols2, metric_names2):
-        place_metric, icb_metric = metric_calcs(
+        place_metric = metric_calcs(
             df,
             metric,
         )
         place_metric = "{:.2f}".format(place_metric)
         cols[metric_cols2.index(metric)].metric(
             name,
-            place_metric,  # icb_metric, delta_color="inverse"
+            place_metric
         )
 
 # Drop-down text box with supporting notes
@@ -733,7 +672,7 @@ metric_names = [
 ]
 
 # Uses metric_calcs to retrieve the "Primary Medical Care Index" and formats it to 2dp
-place_metric, icb_metric = metric_calcs(df, "Primary Medical Care Index")
+place_metric = metric_calcs(df, "Primary Medical Care Index")
 place_metric = "{:.2f}".format(place_metric)
 # Prints the "Primary Medical Care Index" along with label as a header, and a supporting note
 st.header("Primary Medical Care Index: " + str(place_metric))
@@ -745,14 +684,14 @@ with st.expander("Primary Medical Care Sub Indices", expanded  = True):
     # Loops through the index and names lists, as with the core sub-indices above.
     cols = st.columns(3)
     for metric, name in zip(metric_cols, metric_names):
-        place_metric, icb_metric = metric_calcs(
+        place_metric = metric_calcs(
             df,
             metric,
         )
         place_metric = "{:.2f}".format(place_metric)
         cols[metric_cols.index(metric)].metric(
             name,
-            place_metric,  # icb_metric, delta_color="inverse"
+            place_metric
         )
 
 with st.expander("Primary Care Weighted Populations Update", expanded = True):
