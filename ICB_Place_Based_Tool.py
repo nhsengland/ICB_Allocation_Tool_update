@@ -168,6 +168,9 @@ render_svg(svg)
 # Page title, calling the defined year from the config file
 st.title("ICB Place Based Allocation Tool " + config['allocations_year'])
 
+# Writes date of last update to source data
+st.write(f"""Data last updated: {last_folder_update}""")
+
 
 # SIDEBAR Prologue
 ## This section of the sidebar code has to remain at this location in the tool code as it needs to be run before the data is imported.
@@ -814,8 +817,8 @@ with st.expander("About the ICB Place Based Tool", expanded = True):
         "More information on the latest allocations, including contact details, can be found [here](https://www.england.nhs.uk/allocations/)."
     )
 
-# Footer with info on Allocations inbox and update dates for app and source data
-st.info(f"""Last updated: {last_commit_date} (app) / {last_folder_update} (source data)
+# Footer with info on Allocations inbox and update date for app
+st.info(f"""App last updated: {last_commit_date}
         \nFor support with using the AIF Allocation tool please email: [england.revenue-allocations@nhs.net](mailto:england.revenue-allocations@nhs.net)"""
 )
 
