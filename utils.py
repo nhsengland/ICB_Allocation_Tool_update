@@ -326,13 +326,79 @@ def get_latest_commit_date(owner, repo, branch):
     Returns:
     formatted_date (string): The date of the last commit to the specified repo and branch in the format "DD month YYYY"
     """
-    url = f"https://api.github.com/repos/{owner}/{repo}/commits/{branch}"
-    response = requests.get(url)
+    # Constructs the GitHub API URL to find commits
+    url = f"https://api.github.com/repos/{owner}/{repo}/commits"
+    # Adds query parameters for the branch and limits it to 1 return (the most recent)
+    params = {
+        "sha": branch,
+        "per_page": 1
+    }
+    response = requests.get(url, params=params)
+    # Checks if the API call was successful (200 = OK)
     if response.status_code == 200:
-        commit_data = response.json()
-        date_str = commit_data["commit"]["committer"]["date"]
-        date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
-        formatted_date = date_obj.strftime("%d %B %Y")
-        return formatted_date
+        # Parses the API response from JSON
+        commits = response.json()
+        # Confirms the response is not empty
+        if commits:
+            try:
+                # Extracts the commit date string
+                date_str = commits[0]["commit"]["committer"]["date"]
+                # Converts to Python datetime
+                date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+                # Formats to DD Month YYYY
+                formatted_date = date_obj.strftime("%d %B %Y")
+                return formatted_date
+            # If the returned response doesn't meet the above parameters prints an error message
+            except Exception as e:
+                return f"Error parsing date {e}"
+        # If the API response is empty, prints an error
+        else:
+            return "No commits found."
+    # If the API call fails prints the error code
     else:
-        return "Unknown"
+        return f"GitHub API error: {response.status_code}"
+    
+#Fetch latest date of commit to main GitHub repo main branch and format it for display in tool
+def get_latest_folder_update(owner, repo, folder_path, branch):
+    """
+    Uses the requests library to pull the latest update date for a specific folder in the repo from GitHub API.
+
+    Parameters:
+    owner (string): The username of the owner of the repo
+    repo (string): The repo to fetch the latest commit date from
+    folder path (string): The folder path to check for changes
+    branch (string): The branch to fetch the latest commit date from
+
+    Note: In the tool, the parameters are populated from the config file, to make future updates easier.
+
+    Returns:
+    formatted_date (string): The date of the last update to the specified folder, repo, and branch in the format "DD month YYYY"
+    """
+    # Constructs the GitHub API URL to find commits
+    url = f"https://api.github.com/repos/{owner}/{repo}/commits"
+    # Adds query parameters for the folder path and branch and limits it to 1 return (the most recent)
+    params = {
+        "path": folder_path,
+        "sha": branch,
+        "per_page": 1
+    }
+    # Sends the request to GitHub using above details
+    response = requests.get(url, params=params)
+    # Checks if the API call was successful (200 = OK)
+    if response.status_code == 200:
+        try:
+            # Parses the response from json
+            commit_data = response.json()[0]
+            # Extracts the commit date string
+            date_str = commit_data["commit"]["committer"]["date"]
+            # Converts to Python datetime
+            date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+            # Formats to DD Month YYYY
+            formatted_date = date_obj.strftime("%d %B %Y")
+            return formatted_date
+        # If the returned response doesn't meet the above parameters prints an error message
+        except Exception as e:
+            return f"Error parsing date: {e}"
+    # If the API call fails prints the error code
+    else:
+        return f"GitHub API error: {response.status_code}"

@@ -147,6 +147,12 @@ index_names = [
     "Health Inequalities Index",  
 ]
 
+# Uses the get_latest_commit_date function from utils to fetch the most recent commit date based on details from the config file and stores it in last_commit_date for use on page
+last_commit_date = utils.get_latest_commit_date(config['owner'], config['repo'], config['branch'])
+
+# Uses the get_latest_folder_update to find the last update to the data folder, based on details from the config file, and stores it in last_folder_update for use on page
+last_folder_update = utils.get_latest_folder_update(config['owner'], config['repo'], config['folder_path'], config['branch'])
+
 
 # Header section
 # -------------------------------------------------------------------------
@@ -162,9 +168,8 @@ render_svg(svg)
 # Page title, calling the defined year from the config file
 st.title("ICB Place Based Allocation Tool " + config['allocations_year'])
 
-# Uses the get_latest_commit_date function from utils to fetch the most recent commit date based on details from the config file and displays it on the page
-last_commit_date = utils.get_latest_commit_date(config['owner'], config['repo'], config['branch'])
-st.write(f"Last updated: {last_commit_date}")
+# Writes date of last update to source data
+st.write(f"""Data last updated: {last_folder_update}""")
 
 
 # SIDEBAR Prologue
@@ -716,7 +721,7 @@ if print_table:
         utils.write_table(data_all_years[selected_year])
 
 # Content that is added to the first four lines of the downloaded Excel file.
-csv_header1 = "PLEASE READ: Below you can find the results for the places you created, and for the ICB they belong to, for the year you selected."
+csv_header1 = f"""PLEASE READ: Below you can find the results for the places you created, and for the ICB they belong to, for the year you selected. This data was last updated: {last_folder_update}"""
 csv_header2 = "Note that the need indices for the places are relative to the ICB (where the ICBs need index = 1.00), while the need index for the ICB is relative to national need (where the national need index = 1.00)."
 csv_header3 = "This means that the need indices of the individual places cannot be compared to the need index of the ICB. For more information, see the FAQ tab available in the tool."
 csv_header4 = ""
@@ -812,9 +817,9 @@ with st.expander("About the ICB Place Based Tool", expanded = True):
         "More information on the latest allocations, including contact details, can be found [here](https://www.england.nhs.uk/allocations/)."
     )
 
-# Footer with info on Allocations inbox
-st.info(
-    "For support with using the AIF Allocation tool please email: [england.revenue-allocations@nhs.net](mailto:england.revenue-allocations@nhs.net)"
+# Footer with info on Allocations inbox and update date for app
+st.info(f"""App last updated: {last_commit_date}
+        \nFor support with using the AIF Allocation tool please email: [england.revenue-allocations@nhs.net](mailto:england.revenue-allocations@nhs.net)"""
 )
 
 # Displays session data if see_session_data is TRUE
